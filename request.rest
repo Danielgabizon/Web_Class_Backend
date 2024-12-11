@@ -1,0 +1,72 @@
+### add post
+
+POST http://localhost:3000/posts
+Content-Type: application/json
+
+{
+    "sender": "111",
+    "title":"My first post",
+    "content": "first post"
+}
+
+### get all posts
+GET http://localhost:3000/posts
+
+### get all posts by sender id
+
+GET http://localhost:3000/posts?sender=212694657
+
+### get all posts by post id
+
+GET http://localhost:3000/posts/67482ce48263c1b856d648f5
+
+### update post by id
+PUT http://localhost:3000/posts/67482ce48263c1b856d648f5
+Content-Type: application/json
+
+{
+    "sender": "333",
+    "title":"My first post",
+    "content": "this is the editedd version of that post"
+}
+
+### delete post by id
+DELETE http://localhost:3000/posts/67482ce48263c1b856d648f5
+
+### add comment
+
+POST http://localhost:3000/comments/674227eb1a3c93decc8fd9d2
+Content-Type: application/json
+
+{
+    "sender": "222",
+    "title":"My first comment on first post",
+    "content": "great post !"
+}
+### add comment
+
+POST http://localhost:3000/comments/674227eb1a3c93decc8fd9d2
+Content-Type: application/json
+
+{
+    "sender": "333",
+    "title":"My second comment on first post",
+    "content": "bad post !"
+}
+
+### get all comments on post
+GET http://localhost:3000/comments/674227eb1a3c93decc8fd9d2
+
+
+### update comment by id
+PUT http://localhost:3000/comments/67482d108263c1b856d648ff
+Content-Type: application/json
+
+{
+    "content": "very bad post actually!"
+}
+
+
+### delete comment by id
+DELETE  http://localhost:3000/comments/67482d108263c1b856d648ff
+
