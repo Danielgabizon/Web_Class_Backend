@@ -1,11 +1,12 @@
 {
-  "name": "assignment_one",
+  "name": "assignment_two",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsc && node ./dist/app.js",
+    "dev": "nodemon ./src/app.ts",
+    "test": "tsc && jest --detectOpenHandles --forceExit",
+    "lint": "eslint . --ext .ts"
   },
   "author": "Daniel Gabizon",
   "license": "ISC",
@@ -18,7 +19,21 @@
     "mongose": "^0.0.2-security"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.14",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "eslint": "^9.16.0",
+    "globals": "^15.13.0",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.7",
-    "prettier": "3.3.3"
+    "prettier": "3.3.3",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.17.0"
   }
 }
