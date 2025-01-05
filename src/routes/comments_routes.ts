@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 const router = express.Router();
-import commentController from "../controllers/comments_controller";
+import commentsController from "../controllers/comments_controller";
 
+const commentController = new commentsController();
 // setting Up the routes:
 router.post("/:postid", (req: Request, res: Response) => {
   commentController.addNewItem(req, res);
@@ -17,6 +18,9 @@ router.put("/:id", (req: Request, res: Response) => {
 });
 router.delete("/:id", (req: Request, res: Response) => {
   commentController.deleteItem(req, res);
+});
+router.get("/post/:postid", (req: Request, res: Response) => {
+  commentController.getAllCommentsByPost(req, res);
 });
 
 export default router;
