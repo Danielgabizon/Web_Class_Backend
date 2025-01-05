@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
 export interface IComment {
-  postid: mongoose.Schema.Types.ObjectId;
-  sender: number;
+  postid: mongoose.Types.ObjectId;
+  sender: mongoose.Types.ObjectId;
   content: string;
 }
 
@@ -14,7 +14,8 @@ const commentsSchema = new Schema<IComment>({
     required: true,
   },
   sender: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   content: {
