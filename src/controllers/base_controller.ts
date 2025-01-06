@@ -8,7 +8,7 @@ class BaseController<T> {
   async addNewItem(req: Request, res: Response): Promise<Response> {
     try {
       const item = await this.model.create(req.body);
-      return res.status(200).send({ status: "Success", data: item });
+      return res.status(0).send({ status: "Success", data: item });
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }
@@ -23,13 +23,7 @@ class BaseController<T> {
       if (req.query.title) {
         filter.title = req.query.title;
       }
-      // Handle filters for users
-      if (req.query.username) {
-        filter.username = req.query.username;
-      }
-      if (req.query.email) {
-        filter.email = req.query.email;
-      }
+
       const items = await this.model.find(filter);
       return res.status(200).send({ status: "Success", data: items });
     } catch (err) {
