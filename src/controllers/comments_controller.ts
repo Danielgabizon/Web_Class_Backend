@@ -1,12 +1,23 @@
 import Comments, { IComment } from "../models/comments_model";
 import BaseController from "./base_controller";
+import { Model } from "mongoose";
+import { Request, Response } from "express";
 
 class commentsController extends BaseController<IComment> {
-  constructor() {
-    super(Comments);
+  constructor(model: Model<IComment>) {
+    super(model);
   }
-
-  async  getAllCommentsByPost(req, res) : Promise<Response> {
+  async addNewItem(req: Request, res: Response): Promise<Response> {
+    try {
+      const item = req.body;
+      item.sender = req.query._id;
+      const newItem = await this.model.create(item);
+      return res.status(200).send({ status: "Success", data: newItem });
+    } catch (error) {
+      return res.status(400).send({ status: "Error", message: error.message });
+    }
+  }
+  async  getAllCommentsByPost(req: Request, res: Response) : Promise<Response> {
       try {
         const filter = req.params;
         let comments;
@@ -21,4 +32,4 @@ class commentsController extends BaseController<IComment> {
     }
 }
 
-export default commentsController;
+export default new commentsController(Comments);
