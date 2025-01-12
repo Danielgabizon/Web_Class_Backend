@@ -71,7 +71,7 @@
 //           authorization: "jwt " + user.accessToken,
 //         })
 //         .send(post);
-//       expect(response.statusCode).toBe(200);
+//       expect(response.statusCode).toBe(201);
 //       expect(response.body.status).toBe("Success");
 //       expect(response.body.data.sender).toBe(user._id);
 //       expect(response.body.data.title).toBe(post.title);

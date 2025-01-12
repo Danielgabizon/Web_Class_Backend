@@ -21,6 +21,7 @@ interface user extends IUser {
   _id?: string;
   accessToken?: string;
 }
+
 let user: user = {
   username: "username1",
   password: "123456",
@@ -28,6 +29,7 @@ let user: user = {
   fname: "fname1",
   lname: "lname1",
 };
+
 describe("Auth Tests", () => {
   test("Auth Registration fail - missing field", async () => {
     Object.keys(user).forEach(async (field) => {
@@ -44,7 +46,7 @@ describe("Auth Tests", () => {
 
   test("Auth Registration - success ", async () => {
     const response = await request(app).post("/auth/register").send(user);
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
     expect(response.body.status).toBe("Success");
   });
 
@@ -158,7 +160,7 @@ describe("Auth Tests", () => {
         title: "Title",
         content: "Content",
       });
-    expect(response2.statusCode).toBe(200);
+    expect(response2.statusCode).toBe(201);
     expect(response2.body.status).toBe("Success");
     expect(response2.body.data.sender).toBe(user._id); // Check if the sender is the same as the logged in user
   });

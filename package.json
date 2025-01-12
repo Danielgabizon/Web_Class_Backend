@@ -5,7 +5,7 @@
   "scripts": {
     "start": "tsc && node ./dist/app.js",
     "dev": "nodemon ./src/app.ts",
-    "test": "tsc && jest --detectOpenHandles --verbose --forceExit",
+    "test": "tsc && jest --detectOpenHandles --forceExit",
     "testPost": "tsc && jest --detectOpenHandles --forceExit --verbose posts.test.ts",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit ./tests/auth.test.ts",
     "lint": "eslint . --ext .ts"
@@ -41,7 +41,7 @@
     "swagger-ui-express": "^5.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2",
+    "typescript": "^5.7.3",
     "typescript-eslint": "^8.17.0"
   }
 }

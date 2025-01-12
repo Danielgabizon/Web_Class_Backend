@@ -11,8 +11,8 @@ const register = async (req: Request, res: Response) => {
     // Check if all required fields are provided
     const requiredFields = ["username", "password", "email", "fname", "lname"];
     for (const field of requiredFields) {
-      if (!user_info[field] || user_info[field] === "") {
-        throw new Error("All fields are required");
+      if (!user_info[field]) {
+        throw new Error("${field} is required");
       }
     }
 
@@ -28,12 +28,11 @@ const register = async (req: Request, res: Response) => {
       throw new Error("Email already exists");
     }
 
-    // Create a new user
+    // Hash password and save user
     const salt = await bycrypt.genSalt(10);
-    const hashedPassword = await bycrypt.hash(user_info.password, salt);
-    user_info.password = hashedPassword;
+    user_info.password = await bycrypt.hash(user_info.password, salt);
     const newUser = await User.create(user_info);
-    res.status(200).send({ status: "Success", data: newUser });
+    res.status(201).send({ status: "Success", data: newUser });
     return;
   } catch (error) {
     res.status(400).send({ status: "Error", message: error.message });
@@ -42,41 +41,27 @@ const register = async (req: Request, res: Response) => {
 };
 const login = async (req: Request, res: Response) => {
   try {
-    const user_info = req.body;
     // Check if all required fields are provided
-    const requiredFields = ["username", "password"];
-    for (const field of requiredFields) {
-      if (!user_info[field] || user_info[field] === "") {
-        throw new Error(
-          `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
-        );
-      }
-    }
+    const { username, password } = req.body;
+    if (!username || !password)
+      throw new Error("Username and password are required");
 
     // check if user exists
-    const existingUser = await User.findOne({ username: user_info.username });
-    if (!existingUser) {
+    const user = await User.findOne({ username: username });
+    if (!user) {
       throw new Error("Username or password is incorrect");
     }
 
     // check if password is correct
-    const validPassword = await bycrypt.compare(
-      user_info.password,
-      existingUser.password
-    );
+    const validPassword = await bycrypt.compare(password, user.password);
     if (!validPassword) {
       throw new Error("User or password is incorrect");
-    }
-
-    // check if auth configuration is set
-    if (!process.env.TOKEN_SECRET) {
-      throw new Error("Missing auth configuration");
     }
 
     // Create an access token
     const rand1 = Math.floor(Math.random() * 1000000);
     const accessToken = jwt.sign(
-      { _id: existingUser._id, random: rand1 },
+      { _id: user._id, random: rand1 },
       process.env.TOKEN_SECRET,
       { expiresIn: process.env.TOKEN_EXPIRATION }
     );
@@ -84,21 +69,21 @@ const login = async (req: Request, res: Response) => {
     // Create a refresh token
     const rand2 = Math.floor(Math.random() * 1000000);
     const refreshToken = jwt.sign(
-      { _id: existingUser._id, random: rand2 },
+      { _id: user._id, random: rand2 },
       process.env.TOKEN_SECRET,
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
     );
 
     // save refresh token to db
-    if (!existingUser.refreshTokens) existingUser.refreshTokens = [];
-    existingUser.refreshTokens.push(refreshToken);
-    await existingUser.save();
+    if (!user.refreshTokens) user.refreshTokens = [];
+    user.refreshTokens.push(refreshToken);
+    await user.save();
 
     res.status(200).send({
       status: "Success",
       data: {
-        _id: existingUser._id,
-        username: existingUser.username,
+        _id: user._id,
+        username: user.username,
         accessToken: accessToken,
         refreshToken: refreshToken,
       },
@@ -114,43 +99,46 @@ const logout = async (req: Request, res: Response) => {
   const authHeaders = req.headers["authorization"];
   const token = authHeaders && authHeaders.split(" ")[1];
   if (!token) {
-    res.status(401).send({ status: "Error", message: "401" });
+    res.status(401).send({ status: "Error", message: "Access Denied" });
     return;
   }
+
   if (!process.env.TOKEN_SECRET) {
-    res
-      .status(500)
-      .send({ status: "Error", message: "Missing auth configuration" });
+    res.status(500).send({
+      status: "Error",
+      message: "Missing authentication configuration",
+    });
     return;
   }
   jwt.verify(token, process.env.TOKEN_SECRET, async (err, payload: payload) => {
     if (err || !payload) {
-      res.status(405).send({ status: "Error", message: err.message });
+      res.status(403).send({ status: "Error", message: "Invalid token" });
       return;
     }
     try {
-      const existingUser = await User.findById(payload._id);
-      if (!existingUser) {
-        res.status(406).send({ status: "Error", message: "Invalid request" });
+      // get the user from the payload and check if it exists
+      const user = await User.findById(payload._id);
+      if (!user) {
+        res.status(404).send({ status: "Error", message: "User not found" });
         return;
       }
 
       // check if refresh token is valid
-      if (!existingUser.refreshTokens.includes(token)) {
-        existingUser.refreshTokens = []; // invalidate all refresh tokens
-        await existingUser.save();
+      if (!user.refreshTokens.includes(token)) {
+        user.refreshTokens = []; // invalidate all refresh tokens
+        await user.save();
         return res
-          .status(407)
-          .send({ status: "Error", message: "Invalid request" });
+          .status(403)
+          .send({ status: "Error", message: "Invalid token" });
       }
 
       // the refresh token is valid, remove it from the user
-      existingUser.refreshTokens = existingUser.refreshTokens.filter(
-        (t) => t !== token
-      );
-      await existingUser.save();
+      user.refreshTokens = user.refreshTokens.filter((t) => t !== token);
+      await user.save();
 
-      res.status(200).send({ status: "Success", message: "Logged out" });
+      res
+        .status(200)
+        .send({ status: "Success", message: "Logged out successfully" });
     } catch (error) {
       res.status(400).send({ status: "Error", message: error.message });
       return;
@@ -166,63 +154,62 @@ const refresh = async (req: Request, res: Response) => {
     return;
   }
   if (!process.env.TOKEN_SECRET) {
-    res
-      .status(500)
-      .send({ status: "Error", message: "Missing auth configuration" });
+    res.status(500).send({
+      status: "Error",
+      message: "Missing authentication configuration",
+    });
     return;
   }
   jwt.verify(token, process.env.TOKEN_SECRET, async (err, payload: payload) => {
     if (err || !payload) {
-      res.status(403).send({ status: "Error", message: err.message });
+      res.status(403).send({ status: "Error", message: "Invalid Token" });
       return;
     }
     try {
-      const existingUser = await User.findById(payload._id);
-      if (!existingUser) {
-        res.status(403).send({ status: "Error", message: "Invalid request" });
+      const user = await User.findById(payload._id);
+      if (!user) {
+        res.status(404).send({ status: "Error", message: "User not found" });
         return;
       }
 
       // check if refresh token is valid
-      if (!existingUser.refreshTokens.includes(token)) {
-        existingUser.refreshTokens = []; // invalidate all refresh tokens
-        await existingUser.save();
-        res.status(403).send({ status: "Error", message: "Invalid request" });
+      if (!user.refreshTokens.includes(token)) {
+        user.refreshTokens = []; // invalidate all refresh tokens
+        await user.save();
+        res.status(403).send({ status: "Error", message: "Invalid token" });
         return;
       }
 
-      // the refresh token is valid
+      // the refresh token is valid, create a new access token and refresh token
 
       // Create a new access token
       const rand1 = Math.floor(Math.random() * 1000000);
-      const accessToken = jwt.sign(
-        { _id: existingUser._id, random: rand1 },
+      const new_accessToken = jwt.sign(
+        { _id: user._id, random: rand1 },
         process.env.TOKEN_SECRET,
         { expiresIn: process.env.TOKEN_EXPIRATION }
       );
 
       // Create a new refresh token
       const rand2 = Math.floor(Math.random() * 1000000);
-      const refreshToken = jwt.sign(
-        { _id: existingUser._id, random: rand2 },
+      const new_refreshToken = jwt.sign(
+        { _id: user._id, random: rand2 },
         process.env.TOKEN_SECRET,
         { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
       );
 
-      // remove old refresh token and save the new one
-      existingUser.refreshTokens = existingUser.refreshTokens.filter(
-        (t) => t !== token
-      );
-      existingUser.refreshTokens.push(refreshToken);
-      await existingUser.save();
+      // Replace old refresh token
+      user.refreshTokens = user.refreshTokens.filter((t) => t !== token);
+      user.refreshTokens.push(new_refreshToken);
+      await user.save();
 
       res.status(200).send({
         status: "Success",
         data: {
-          _id: existingUser._id,
-          username: existingUser.username,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
+          _id: user._id,
+          username: user.username,
+          accessToken: new_accessToken,
+          refreshToken: new_refreshToken,
         },
       });
     } catch (error) {
@@ -244,16 +231,20 @@ const authTestMiddleware = (
     return;
   }
   if (!process.env.TOKEN_SECRET) {
-    res
-      .status(500)
-      .send({ status: "Error", message: "Missing auth configuration" });
+    res.status(500).send({
+      status: "Error",
+      message: "Missing authentication configuration",
+    });
     return;
   }
   jwt.verify(token, process.env.TOKEN_SECRET, (err, payload: payload) => {
     if (err || !payload) {
-      res.status(403).send({ status: "Error", message: err.message });
+      res
+        .status(403)
+        .send({ status: "Error", message: "Invalid or expired token" });
       return;
     }
+    // Attach user ID to request for downstream handlers
     req.query._id = payload._id;
     next();
   });

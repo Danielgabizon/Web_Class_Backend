@@ -1,4 +1,3 @@
-// importing Express and creating a Router instance:
 import express, { Request, Response } from "express";
 import postController from "../controllers/posts_controller";
 import authController from "../controllers/auth_controller";
@@ -66,7 +65,7 @@ const router = express.Router();
  *           schema:
  *             $ref: '#/components/schemas/PostInput'
  *     responses:
- *       200:
+ *       201:
  *         description: Post created successfully
  *         content:
  *           application/json:
@@ -111,13 +110,13 @@ router.post(
  *       - in: query
  *         name: sender
  *         schema:
- *           type: string
- *         description: Filter posts by sender ID
+ *          type: string
+ *          description: Filter posts by sender ID
  *       - in: query
  *         name: title
  *         schema:
- *           type: string
- *         description: Filter posts by title
+ *          type: string
+ *          description: Filter posts by title
  *     responses:
  *       200:
  *         description: Successfully retrieved posts
@@ -163,8 +162,8 @@ router.get("/", (req: Request, res: Response) => {
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: The post ID
+ *          type: string
+ *          description: The post ID
  *     responses:
  *       200:
  *         description: Successfully retrieved the post
@@ -191,6 +190,19 @@ router.get("/", (req: Request, res: Response) => {
  *                 message:
  *                   type: string
  *                   example: Post not found
+ *       400:
+ *          description: Error retrieving post
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  status:
+ *                    type: string
+ *                    example: Error
+ *                  message:
+ *                    type: string
+ *                    example: An error occurred
  */
 router.get("/:id", (req: Request, res: Response) => {
   postController.getItemById(req, res);
@@ -210,8 +222,8 @@ router.get("/:id", (req: Request, res: Response) => {
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: The post ID
+ *          type: string
+ *          description: The post ID
  *     requestBody:
  *       required: true
  *       content:
@@ -244,6 +256,19 @@ router.get("/:id", (req: Request, res: Response) => {
  *                 message:
  *                   type: string
  *                   example: Post not found
+ *       400:
+ *        description: Error updating post
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: An error occurred
  */
 router.put(
   "/:id",
@@ -296,6 +321,19 @@ router.put(
  *                 message:
  *                   type: string
  *                   example: Post not found
+ *       400:
+ *        description: Error deleting post
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: An error occurred
  */
 router.delete(
   "/:id",

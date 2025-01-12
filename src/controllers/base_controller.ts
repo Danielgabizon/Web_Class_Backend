@@ -8,25 +8,23 @@ class BaseController<T> {
   async addNewItem(req: Request, res: Response): Promise<Response> {
     try {
       const item = await this.model.create(req.body);
-      return res.status(0).send({ status: "Success", data: item });
+      return res.status(201).send({ status: "Success", data: item });
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }
   }
   async getAllItems(req: Request, res: Response): Promise<Response> {
     try {
+      const allowedFilters = ["sender", "title"];
       const filter: Record<string, any> = {};
-      // Handle filters for posts
-      if (req.query.sender) {
-        filter.sender = req.query.sender;
+      for (const key of allowedFilters) {
+        if (req.query[key]) {
+          filter[key] = req.query[key];
+        }
       }
-      if (req.query.title) {
-        filter.title = req.query.title;
-      }
-
       const items = await this.model.find(filter);
       return res.status(200).send({ status: "Success", data: items });
-    } catch (err) {
+    } catch (err: any) {
       return res.status(400).send({ status: "Error", message: err.message });
     }
   }
@@ -49,6 +47,7 @@ class BaseController<T> {
     try {
       const itemId = req.params.id;
       const updateContent = req.body;
+
       // Update the item and return the updated document
       const updatedItem = await this.model.findByIdAndUpdate(
         itemId, // The ID of the item to update
