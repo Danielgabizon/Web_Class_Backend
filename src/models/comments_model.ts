@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 export interface IComment {
   postid: mongoose.Types.ObjectId;
@@ -6,7 +6,6 @@ export interface IComment {
   content: string;
 }
 
-const Schema = mongoose.Schema;
 const commentsSchema = new Schema<IComment>({
   postid: {
     type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +20,7 @@ const commentsSchema = new Schema<IComment>({
   content: {
     type: String,
     required: true,
+    trim: true,
   },
 });
 

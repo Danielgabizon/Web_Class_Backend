@@ -9,6 +9,7 @@ class PostsController extends BaseController<IPost> {
   }
   async addNewItem(req: Request, res: Response): Promise<Response> {
     try {
+      const senderId = req.query._id; // The post's sender Id
       const { title, content } = req.body;
       if (!title || title.trim() === "") {
         throw new Error("Please provide a post's title");
@@ -16,35 +17,54 @@ class PostsController extends BaseController<IPost> {
       if (!content || content.trim() === "") {
         throw new Error("Please provide a post's content");
       }
-      const senderId = req.query._id;
-      const post = { sender: senderId, title, content };
+      const post = { sender: senderId, title: title, content: content };
       const newPost = await this.model.create(post);
       return res.status(201).send({ status: "Success", data: newPost });
     } catch (error) {
       return res.status(400).send({ status: "Error", message: error.message });
     }
   }
+  async getAllItems(req: Request, res: Response): Promise<Response> {
+    try {
+      const allowedFilters = ["sender", "title"];
+      const filter: Record<string, any> = {};
+      for (const key of allowedFilters) {
+        if (req.query[key]) {
+          filter[key] = req.query[key];
+        }
+      }
+      const items = await this.model.find(filter);
+      return res.status(200).send({ status: "Success", data: items });
+    } catch (err: any) {
+      return res.status(400).send({ status: "Error", message: err.message });
+    }
+  }
   async updateItem(req: Request, res: Response) {
     try {
-      const itemId = req.params.id; // The ID of the item to update
-      const updateContent = req.body; // The content to update
+      const senderId = req.query._id; // The post's sender Id
+      const postId = req.params.id; // The ID of the post to update
+      const { title, content } = req.body;
+      if (!title || title.trim() === "") {
+        throw new Error("Please provide a post's title");
+      }
+      if (!content || content.trim() === "") {
+        throw new Error("Please provide a post's content");
+      }
 
-      // set the sender to the user's ID
-      const senderId = req.query._id;
-      updateContent.sender = senderId;
+      const updatedData = { sender: senderId, title: title, content: content };
 
       // Update the item and return the updated document
-      const updatedItem = await this.model.findByIdAndUpdate(
-        itemId, // The ID of the item to update
-        updateContent, // The content to update
+      const updatedPost = await this.model.findByIdAndUpdate(
+        postId, // The ID of the item to update
+        updatedData, // The content to update
         { new: true, runValidators: true } // Options: return the updated document and validate the update
       );
-      if (!updatedItem) {
+      if (!updatedPost) {
         return res
           .status(404)
           .send({ status: "Error", message: "item not found" });
       }
-      return res.status(200).send({ status: "Success", data: updatedItem });
+      return res.status(200).send({ status: "Success", data: updatedPost });
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }

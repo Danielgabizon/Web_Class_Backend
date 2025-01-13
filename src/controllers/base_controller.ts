@@ -15,14 +15,7 @@ class BaseController<T> {
   }
   async getAllItems(req: Request, res: Response): Promise<Response> {
     try {
-      const allowedFilters = ["sender", "title"];
-      const filter: Record<string, any> = {};
-      for (const key of allowedFilters) {
-        if (req.query[key]) {
-          filter[key] = req.query[key];
-        }
-      }
-      const items = await this.model.find(filter);
+      const items = await this.model.find();
       return res.status(200).send({ status: "Success", data: items });
     } catch (err: any) {
       return res.status(400).send({ status: "Error", message: err.message });
