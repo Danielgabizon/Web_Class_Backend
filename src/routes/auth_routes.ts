@@ -14,61 +14,7 @@ const router = express.Router();
  * @swagger
  * components:
  *   schemas:
- *     User:
- *       type: object
- *       properties:
- *         _id:
- *           type: string
- *           example: 64d2f34c9b3d5e001ee0fede
- *         username:
- *           type: string
- *           example: johndoe
- *         email:
- *           type: string
- *           example: johndoe@example.com
- *         fname:
- *           type: string
- *           example: John
- *         lname:
- *           type: string
- *           example: Doe
- *     RegisterRequest:
- *       type: object
- *       required:
- *         - username
- *         - password
- *         - email
- *         - fname
- *         - lname
- *       properties:
- *         username:
- *           type: string
- *           example: johndoe
- *         password:
- *           type: string
- *           example: P@ssw0rd123
- *         email:
- *           type: string
- *           example: johndoe@example.com
- *         fname:
- *           type: string
- *           example: John
- *         lname:
- *           type: string
- *           example: Doe
- *     LoginRequest:
- *       type: object
- *       required:
- *         - username
- *         - password
- *       properties:
- *         username:
- *           type: string
- *           example: johndoe
- *         password:
- *           type: string
- *           example: P@ssw0rd123
- *     AuthResponse:
+ *     TokenResponse:
  *       type: object
  *       properties:
  *         status:
@@ -89,15 +35,6 @@ const router = express.Router();
  *             refreshToken:
  *               type: string
  *               example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *     ErrorResponse:
- *       type: object
- *       properties:
- *         status:
- *           type: string
- *           example: Error
- *         message:
- *           type: string
- *           example: User already exists
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -117,10 +54,38 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/RegisterRequest'
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *               - email
+ *               - fname
+ *               - lname
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: johndoe
+ *               password:
+ *                 type: string
+ *                 example: "P@ssw0rd123"
+ *               email:
+ *                 type: string
+ *                 example: johndoe@example.com
+ *               fname:
+ *                 type: string
+ *                 example: John
+ *               lname:
+ *                 type: string
+ *                 example: Doe
  *     responses:
- *       200:
+ *       201:
  *         description: User successfully registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TokenResponse'
+ *       400:
+ *         description: Validation error or user already exists
  *         content:
  *           application/json:
  *             schema:
@@ -128,15 +93,10 @@ const router = express.Router();
  *               properties:
  *                 status:
  *                   type: string
- *                   example: Success
- *                 data:
- *                   $ref: '#/components/schemas/User'
- *       400:
- *         description: Validation error or user already exists
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "A field is missing or user/email already exists."
  */
 router.post("/register", authController.register);
 
@@ -152,20 +112,37 @@ router.post("/register", authController.register);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: johndoe
+ *               password:
+ *                 type: string
+ *                 example: "P@ssw0rd123"
  *     responses:
  *       200:
  *         description: Successfully authenticated
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
+ *               $ref: '#/components/schemas/TokenResponse'
  *       400:
- *         description: Invalid credentials
+ *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "Username or password is incorrect."
  */
 router.post("/login", authController.login);
 
@@ -173,8 +150,8 @@ router.post("/login", authController.login);
  * @swagger
  * /auth/logout:
  *   post:
- *     summary: Logout a user
- *     description: Invalidates the user's refresh token.
+ *     summary: Log out a user
+ *     description: Logs out a user by invalidating their token.
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -191,13 +168,59 @@ router.post("/login", authController.login);
  *                   example: Success
  *                 message:
  *                   type: string
- *                   example: Logged out
+ *                   example: "Logged out successfully."
  *       401:
- *         description: Unauthorized or missing token
+ *         description: Access Denied - No token provided
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "Access Denied."
+ *       403:
+ *         description: Invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid token."
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "User not found."
+ *       500:
+ *         description: Server error related to authentication configuration
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "Missing authentication configuration."
  */
 router.post("/logout", authController.logout);
 
@@ -216,13 +239,72 @@ router.post("/logout", authController.logout);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
- *       403:
- *         description: Invalid or expired refresh token
+ *               $ref: '#/components/schemas/TokenResponse'
+ *       400:
+ *         description: Error during the refresh process
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "An unexpected error occurred."
+ *       401:
+ *         description: Access Denied - No token provided
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "Access Denied."
+ *       403:
+ *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type of object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid Token."
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type of object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type of string
+ *                   example: "User not found."
+ *       500:
+ *         description: Missing authentication configuration
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "Missing authentication configuration."
  */
 router.post("/refresh", authController.refresh);
 
