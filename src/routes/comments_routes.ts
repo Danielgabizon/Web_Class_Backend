@@ -20,15 +20,15 @@ import authController from "../controllers/auth_controller";
  *         _id:
  *           type: string
  *           example: 5fc2d5b5b3473c44b32495ab
- *         content:
- *           type: string
- *           example: This is the content of my first comment.
  *         postId:
  *           type: string
  *           example: 5fc2d5a8b3473c44b32495aa
- *         creatorId:
+ *         sender:
  *           type: string
  *           example: 5fc2d593b3473c44b32495a9
+ *         content:
+ *           type: string
+ *           example: "This is the content of my comment"
  *     CommentInput:
  *       type: object
  *       required:
@@ -36,7 +36,8 @@ import authController from "../controllers/auth_controller";
  *       properties:
  *         content:
  *           type: string
- *           example: This is the content of my first comment.
+ *           description: The content of the comment.
+ *           example: "This is the content of my comment"
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -46,7 +47,7 @@ import authController from "../controllers/auth_controller";
 
 /**
  * @swagger
- * /comments/post/{postId}:
+ * /posts/{postId}/comments:
  *   post:
  *     summary: Add a new comment to a post
  *     description: Adds a new comment for the authenticated user on the specified post.
@@ -60,6 +61,12 @@ import authController from "../controllers/auth_controller";
  *           type: string
  *         required: true
  *         description: The post ID to comment on
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *            type: string
+ *         required: true
+ *         description: The user ID from the auth token
  *     requestBody:
  *       required: true
  *       content:
@@ -80,7 +87,7 @@ import authController from "../controllers/auth_controller";
  *                 data:
  *                   $ref: '#/components/schemas/Comment'
  *       400:
- *         description: Bad request
+ *         description: Bad request, validation error or incorrect input
  *         content:
  *           application/json:
  *             schema:
@@ -91,10 +98,10 @@ import authController from "../controllers/auth_controller";
  *                   example: Error
  *                 message:
  *                   type: string
- *                   example: "Validation error"
+ *                   example: ""Please provide a comment's content"
  */
 router.post(
-  "/post/:postId",
+  "/",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.addNewItem(req, res);
@@ -103,48 +110,7 @@ router.post(
 
 /**
  * @swagger
- * /comments/:
- *   get:
- *     summary: Get all comments
- *     description: Retrieves all comments.
- *     tags: [Comments]
- *     responses:
- *       200:
- *         description: Successfully retrieved all comments
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: Success
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Comment'
- *       400:
- *         description: Error retrieving comments
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: Error
- *                 message:
- *                   type: string
- *                   example: "An error occurred"
- */
-
-router.get("/", (req: Request, res: Response) => {
-  commentsController.getAllItems(req, res);
-});
-
-/**
- * @swagger
- * /comments/post/{postId}:
+ * /posts/{postId}/comments:
  *   get:
  *     summary: Get all comments for a specific post
  *     description: Retrieves all comments associated with a specific post.
@@ -155,7 +121,7 @@ router.get("/", (req: Request, res: Response) => {
  *         required: true
  *         schema:
  *          type: string
- *          description: The post ID to retrieve comments for
+ *          description: The Id of the post to get comments for
  *     responses:
  *       200:
  *         description: Successfully retrieved comments for the post
@@ -186,18 +152,24 @@ router.get("/", (req: Request, res: Response) => {
  *                  example: "An error occurred"
  */
 
-router.get("/post/:postId", (req: Request, res: Response) => {
-  commentsController.getAllCommentsByPost(req, res);
+router.get("/", (req: Request, res: Response) => {
+  commentsController.getAllItems(req, res);
 });
 
 /**
  * @swagger
- * /comments/{id}:
+ * /posts/{postId}/comments/{id}:
  *   get:
- *     summary: Get a comment by ID
- *     description: Retrieves a single comment by its ID.
+ *     summary: Get a Specific Comment
+ *     description: Retrieves a single comment by its ID within a given post.
  *     tags: [Comments]
  *     parameters:
+ *       - in: path
+ *         name: postId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post ID to which the comment belongs
  *       - in: path
  *         name: id
  *         required: true
@@ -251,9 +223,9 @@ router.get("/:id", (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /comments/post/{postId}/{id}:
+ * /posts/{postId}/comments/{id}:
  *   put:
- *     summary: Update a comment within a post
+ *     summary: Update a specific comment
  *     description: Updates a specific comment by its ID within a given post.
  *     tags: [Comments]
  *     security:
@@ -302,9 +274,9 @@ router.get("/:id", (req: Request, res: Response) => {
  *                   example: Error
  *                 message:
  *                   type: string
- *                   example: "Validation error"
+ *                   example: "Please provide a comment's content"
  *       404:
- *         description: Post or comment not found
+ *         description: Comment not found
  *         content:
  *           application/json:
  *             schema:
@@ -316,10 +288,23 @@ router.get("/:id", (req: Request, res: Response) => {
  *                 message:
  *                   type: string
  *                   example: "Comment not found"
+ *       403:
+ *        description: Unauthorized to update this comment
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: "Unauthorized to update this comment"
  */
 
 router.put(
-  "/post/:postId/:id",
+  "/:id",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.updateItem(req, res);
@@ -328,7 +313,7 @@ router.put(
 
 /**
  * @swagger
- * /comments/{id}:
+ * /posts/{postId}/comments/{id}:
  *   delete:
  *     summary: Delete a comment
  *     description: Deletes a comment by its ID.
@@ -342,6 +327,18 @@ router.put(
  *         schema:
  *           type: string
  *         description: The comment ID
+ *       - in: path
+ *         name: postId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post ID to which the comment belongs
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *            type: string
+ *         required: true
+ *         description: The user ID from the auth token
  *     responses:
  *       200:
  *         description: Successfully deleted the comment
@@ -382,6 +379,19 @@ router.put(
  *                message:
  *                  type: string
  *                  example: "An error occurred"
+ *       403:
+ *        description: Unauthorized to delete this comment
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: "Unauthorized to delete this comment"
  */
 router.delete(
   "/:id",

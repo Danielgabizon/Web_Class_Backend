@@ -245,7 +245,7 @@ const authTestMiddleware = (
       return;
     }
     // Attach user ID to request for downstream handlers
-    req.query._id = payload._id;
+    req.query.userId = payload._id;
     next();
   });
 };

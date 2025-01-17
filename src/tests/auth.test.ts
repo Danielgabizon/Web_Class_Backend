@@ -4,7 +4,7 @@
 // import { Express } from "express";
 // import usersModel, { IUser } from "../models/users_model";
 
-// let app: Express;
+// let app: Express | null = null;
 
 // beforeAll(async () => {
 //   console.log("Before all tests");
@@ -20,9 +20,9 @@
 // interface user extends IUser {
 //   _id?: string;
 //   accessToken?: string;
-// }
+// };
 
-// let user: user = {
+// const user: user = {
 //   username: "username1",
 //   password: "123456",
 //   email: "username1@gmail.com",
@@ -213,7 +213,6 @@
 //       .set({
 //         authorization: "jwt " + user.refreshTokens[0],
 //       });
-//     console.log(user.refreshTokens);
 //     expect(response.statusCode).toBe(200);
 //     expect(response.body.status).toBe("Success");
 //     // Try to use the refresh token again

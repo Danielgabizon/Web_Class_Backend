@@ -269,6 +269,19 @@ router.get("/:id", (req: Request, res: Response) => {
  *                message:
  *                  type: string
  *                  example: An error occurred
+ *       403:
+ *        description: Unauthorized to update post
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: Unauthorized to update this post
  */
 router.put(
   "/:id",
@@ -334,6 +347,19 @@ router.put(
  *                message:
  *                  type: string
  *                  example: An error occurred
+ *       403:
+ *        description: Unauthorized to delete post
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: Unauthorized to delete this post
  */
 router.delete(
   "/:id",

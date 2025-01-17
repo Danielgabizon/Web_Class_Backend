@@ -230,7 +230,8 @@ router.post("/logout", authController.logout);
  *   post:
  *     summary: Refresh tokens
  *     description: Generates new access and refresh tokens.
- *     tags: [Auth]
+ *     tags:
+ *       - Auth
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -271,7 +272,7 @@ router.post("/logout", authController.logout);
  *         content:
  *           application/json:
  *             schema:
- *               type of object
+ *               type: object
  *               properties:
  *                 status:
  *                   type: string
@@ -284,13 +285,13 @@ router.post("/logout", authController.logout);
  *         content:
  *           application/json:
  *             schema:
- *               type of object
+ *               type: object
  *               properties:
  *                 status:
  *                   type: string
  *                   example: Error
  *                 message:
- *                   type of string
+ *                   type: string
  *                   example: "User not found."
  *       500:
  *         description: Missing authentication configuration
@@ -306,6 +307,7 @@ router.post("/logout", authController.logout);
  *                   type: string
  *                   example: "Missing authentication configuration."
  */
+
 router.post("/refresh", authController.refresh);
 
 export default router;

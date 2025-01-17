@@ -7,7 +7,7 @@ export interface IUser {
   fname: string;
   lname: string;
   refreshTokens?: string[];
-}
+};
 
 const Schema = mongoose.Schema;
 

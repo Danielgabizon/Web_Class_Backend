@@ -1,13 +1,13 @@
 import mongoose, { Schema } from "mongoose";
 
 export interface IComment {
-  postid: mongoose.Types.ObjectId;
+  postId: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
   content: string;
 }
 
 const commentsSchema = new Schema<IComment>({
-  postid: {
+  postId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Post",
     required: true,
