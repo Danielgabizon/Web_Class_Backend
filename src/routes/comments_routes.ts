@@ -48,60 +48,60 @@ import authController from "../controllers/auth_controller";
 /**
  * @swagger
  * /posts/{postId}/comments:
- *   post:
- *     summary: Add a new comment to a post
- *     description: Adds a new comment for the authenticated user on the specified post.
- *     tags: [Comments]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: postId
- *         schema:
+ *  post:
+ *    summary: Add a new comment to a post
+ *    description: Adds a new comment for the authenticated user on the specified post.
+ *    tags: [Comments]
+ *    security:
+ *      - bearerAuth: []
+ *    parameters:
+ *      - in: path
+ *        name: postId
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: The post ID to comment on
+ *      - in: query
+ *        name: userId
+ *        schema:
  *           type: string
- *         required: true
- *         description: The post ID to comment on
- *       - in: query
- *         name: userId
- *         schema:
- *            type: string
- *         required: true
- *         description: The user ID from the auth token
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CommentInput'
- *     responses:
- *       201:
- *         description: Comment created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: Success
- *                 data:
- *                   $ref: '#/components/schemas/Comment'
- *       400:
- *         description: Bad request, validation error or incorrect input
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: Error
- *                 message:
- *                   type: string
- *                   example: ""Please provide a comment's content"
+ *        required: true
+ *        description: The user ID from the auth token
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            $ref: '#/components/schemas/CommentInput'
+ *    responses:
+ *      201:
+ *        description: Comment created successfully
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Success
+ *                data:
+ *                  $ref: '#/components/schemas/Comment'
+ *      400:
+ *        description: Bad request, validation error or incorrect input
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: "Please provide a comment's content"
  */
 router.post(
-  "/",
+  "/posts/:postId/comments",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.addNewItem(req, res);
@@ -151,74 +151,8 @@ router.post(
  *                  type: string
  *                  example: "An error occurred"
  */
-
-router.get("/", (req: Request, res: Response) => {
+router.get("/posts/:postId/comments", (req: Request, res: Response) => {
   commentsController.getAllItems(req, res);
-});
-
-/**
- * @swagger
- * /posts/{postId}/comments/{id}:
- *   get:
- *     summary: Get a Specific Comment
- *     description: Retrieves a single comment by its ID within a given post.
- *     tags: [Comments]
- *     parameters:
- *       - in: path
- *         name: postId
- *         schema:
- *           type: string
- *         required: true
- *         description: The post ID to which the comment belongs
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *          type: string
- *          description: The comment ID
- *     responses:
- *       200:
- *         description: Successfully retrieved the comment
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: Success
- *                 data:
- *                   $ref: '#/components/schemas/Comment'
- *       404:
- *         description: Comment not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: Error
- *                 message:
- *                   type: string
- *                   example: "Item not found"
- *       400:
- *        description: Error retrieving comment
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                status:
- *                  type: string
- *                  example: Error
- *                message:
- *                  type: string
- *                  example: "An error occurred"
- */
-
-router.get("/:id", (req: Request, res: Response) => {
-  commentsController.getItemById(req, res);
 });
 
 /**
@@ -243,6 +177,12 @@ router.get("/:id", (req: Request, res: Response) => {
  *         schema:
  *           type: string
  *           description: The ID of the comment to update
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           description: The user ID from the auth token
  *     requestBody:
  *       required: true
  *       content:
@@ -302,9 +242,8 @@ router.get("/:id", (req: Request, res: Response) => {
  *                  type: string
  *                  example: "Unauthorized to update this comment"
  */
-
 router.put(
-  "/:id",
+  "/posts/:postId/comments/:id",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.updateItem(req, res);
@@ -394,7 +333,7 @@ router.put(
  *                  example: "Unauthorized to delete this comment"
  */
 router.delete(
-  "/:id",
+  "/posts/:postId/comments/:id",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.deleteItem(req, res);

@@ -20,7 +20,7 @@
 // interface user extends IUser {
 //   _id?: string;
 //   accessToken?: string;
-// };
+// }
 
 // const user: user = {
 //   username: "username1",
