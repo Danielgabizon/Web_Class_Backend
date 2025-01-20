@@ -61,12 +61,6 @@ import authController from "../controllers/auth_controller";
  *          type: string
  *        required: true
  *        description: The post ID to comment on
- *      - in: query
- *        name: userId
- *        schema:
- *           type: string
- *        required: true
- *        description: The user ID from the auth token
  *    requestBody:
  *      required: true
  *      content:
@@ -177,12 +171,6 @@ router.get("/posts/:postId/comments", (req: Request, res: Response) => {
  *         schema:
  *           type: string
  *           description: The ID of the comment to update
- *       - in: query
- *         name: userId
- *         required: true
- *         schema:
- *           type: string
- *           description: The user ID from the auth token
  *     requestBody:
  *       required: true
  *       content:
@@ -272,12 +260,6 @@ router.put(
  *           type: string
  *         required: true
  *         description: The post ID to which the comment belongs
- *       - in: query
- *         name: userId
- *         schema:
- *            type: string
- *         required: true
- *         description: The user ID from the auth token
  *     responses:
  *       200:
  *         description: Successfully deleted the comment
