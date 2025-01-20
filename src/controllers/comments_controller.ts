@@ -77,16 +77,10 @@ class commentsController extends BaseController<IComment> {
         throw new Error("Please provide a comment's content");
       }
 
-      const updatedData = {
-        postId: postId,
-        sender: userId,
-        content: content,
-      };
-
       // Update the item and return the updated document
       const updatedComment = await this.model.findByIdAndUpdate(
         commentId, // The ID of the item to update
-        updatedData, // The content to update
+        { content: content }, // The content to update
         { new: true } // return the updated document
       );
 

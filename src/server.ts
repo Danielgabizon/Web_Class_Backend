@@ -9,13 +9,14 @@ import bodyParser from "body-parser";
 import posts_routes from "./routes/posts_routes";
 import auth_routes from "./routes/auth_routes";
 import comments_routes from "./routes/comments_routes";
+import users_routes from "./routes/users_routes";
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/auth", auth_routes);
 app.use("/posts", posts_routes);
 app.use("/posts/:postId/comments", comments_routes);
-
+app.use("/users", users_routes);
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -24,7 +25,7 @@ const options = {
       version: "1.0.0",
       description: "REST server including authentication using JWT",
     },
-    servers: [{ url: "http://localhost:" }],
+    servers: [{ url: "http://localhost:3000" }],
   },
   apis: ["./src/routes/*.ts"],
 };
