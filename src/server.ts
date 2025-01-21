@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/auth", auth_routes);
 app.use("/posts", posts_routes);
-app.use("/posts/:postId/comments", comments_routes);
+app.use("/", comments_routes);
 app.use("/users", users_routes);
 const options = {
   definition: {
