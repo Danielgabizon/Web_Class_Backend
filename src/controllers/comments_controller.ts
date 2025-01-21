@@ -12,10 +12,8 @@ class commentsController extends BaseController<IComment> {
     try {
       const senderId = req.query.userId; // The ID of the user making the comment
       if (!senderId) throw new Error("User not found");
-
       const postId = req.params.postId; // The ID of the post to comment on
       if (!postId) throw new Error("Post not found");
-
       const content = req.body.content; // The content of the comment
       if (!content || content.trim() === "") {
         throw new Error("Please provide a comment's content");

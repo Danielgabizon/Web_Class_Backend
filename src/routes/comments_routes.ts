@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 import commentsController from "../controllers/comments_controller";
 import authController from "../controllers/auth_controller";
 
@@ -95,7 +95,7 @@ import authController from "../controllers/auth_controller";
  *                  example: "Please provide a comment's content"
  */
 router.post(
-  "/posts/:postId/comments",
+  "/",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.addNewItem(req, res);
@@ -145,7 +145,7 @@ router.post(
  *                  type: string
  *                  example: "An error occurred"
  */
-router.get("/posts/:postId/comments", (req: Request, res: Response) => {
+router.get("/", (req: Request, res: Response) => {
   commentsController.getAllItems(req, res);
 });
 
@@ -231,7 +231,7 @@ router.get("/posts/:postId/comments", (req: Request, res: Response) => {
  *                  example: "Unauthorized to update this comment"
  */
 router.put(
-  "/posts/:postId/comments/:id",
+  "/:id",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.updateItem(req, res);
@@ -315,7 +315,7 @@ router.put(
  *                  example: "Unauthorized to delete this comment"
  */
 router.delete(
-  "/posts/:postId/comments/:id",
+  "/:id",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.deleteItem(req, res);

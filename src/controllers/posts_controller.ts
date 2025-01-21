@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Posts, { IPost } from "../models/posts_model";
 import BaseController from "./base_controller";
 import { Model } from "mongoose";
-
+import Comments from "../models/comments_model";
 class PostsController extends BaseController<IPost> {
   constructor(model: Model<IPost>) {
     super(model);
@@ -118,6 +118,8 @@ class PostsController extends BaseController<IPost> {
 
       // deleting the item and return the deleted document
       const deletedPost = await this.model.findByIdAndDelete(postId);
+      // delete all comments associated with the post
+      await Comments.deleteMany({ postId: postId });
 
       return res.status(200).send({ status: "Success", data: deletedPost });
     } catch (err) {
