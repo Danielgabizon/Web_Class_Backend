@@ -82,91 +82,83 @@ beforeAll(async () => {
   post2id = response4.body.data._id;
 });
 
-afterAll(() => {
-  console.log("After all tests");
-  mongoose.connection.close();
-});
-describe("Comments test", () => {
-  test("create comments", async () => {
-    for (const comment of testComment) {
-      const response = await request(app)
-        .post("/posts/" + comment.postId + "/comments")
-        .set({
-          authorization: "jwt " + user.accessToken,
-        })
-        .send(comment);
-      expect(response.statusCode).toBe(201);
-      expect(response.body.status).toBe("Success");
-      expect(response.body.data.postId).toBe(comment.postId.toString());
-      expect(response.body.data.content).toBe(comment.content);
-      comment._id = response.body.data._id;
-    }
-  });
-  test("Create comment fail", async () => {
-    const comment = {
-      sender: new mongoose.Types.ObjectId(),
-      postId: new mongoose.Types.ObjectId(),
-    };
+test("create comments", async () => {
+  for (const comment of testComment) {
     const response = await request(app)
-      .post("/posts/" + comment.postId + "/comments")
+      .post("/comments/" + comment.postId)
       .set({
         authorization: "jwt " + user.accessToken,
       })
       .send(comment);
-    expect(response.statusCode).toBe(400);
-    expect(response.body.status).toBe("Error");
-  });
-  test("Get all comments by post1", async () => {
-    const response = await request(app).get("/posts/" + post1id + "/comments");
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
     expect(response.body.status).toBe("Success");
-    expect(response.body.data.length).toBe(
-      testComment.filter((c) => c.postId.toString() === post1id.toString())
-        .length
-    );
-  });
-  test("Get all comments by post2", async () => {
-    const response = await request(app).get("/posts/" + post2id + "/comments");
-    expect(response.statusCode).toBe(200);
-    expect(response.body.status).toBe("Success");
-    expect(response.body.data.length).toBe(
-      testComment.filter((c) => c.postId.toString() === post2id.toString())
-        .length
-    );
-  });
-  test("Test filter by sender", async () => {
-    const comment = testComment[0];
-    const response = await request(app).get(
-      `/posts/${comment.postId}/comments?sender=${user._id}`
-    );
-    expect(response.statusCode).toBe(200);
-    expect(response.body.status).toBe("Success");
-    expect(response.body.data.length).toBe(2);
-    expect(response.body.data[0].sender).toBe(user._id.toString());
-  });
-  test("Update comment fail", async () => {
-    const comment = testComment[0];
-    comment.content = "Updated content";
-    const response = await request(app)
-      .put(`/posts/${comment.postId}/comments/${comment._id}`)
-      .set({ authorization: "jwt " + user.accessToken });
-    expect(response.statusCode).toBe(400);
-    expect(response.body.status).toBe("Error");
-  });
+    expect(response.body.data.postId).toBe(comment.postId.toString());
+    expect(response.body.data.content).toBe(comment.content);
+    comment._id = response.body.data._id;
+  }
+});
+test("Create comment fail", async () => {
+  const comment = {
+    sender: new mongoose.Types.ObjectId(),
+    postId: new mongoose.Types.ObjectId(),
+  };
+  const response = await request(app)
+    .post("/comments/" + comment.postId)
+    .set({
+      authorization: "jwt " + user.accessToken,
+    })
+    .send(comment);
+  expect(response.statusCode).toBe(400);
+  expect(response.body.status).toBe("Error");
+});
+test("Get all comments by post1", async () => {
+  const response = await request(app).get("/comments/" + post1id);
+  expect(response.statusCode).toBe(200);
+  expect(response.body.status).toBe("Success");
+  expect(response.body.data.length).toBe(
+    testComment.filter((c) => c.postId.toString() === post1id.toString()).length
+  );
+});
+test("Get all comments by post2", async () => {
+  const response = await request(app).get("/comments/" + post2id);
+  expect(response.statusCode).toBe(200);
+  expect(response.body.status).toBe("Success");
+  expect(response.body.data.length).toBe(
+    testComment.filter((c) => c.postId.toString() === post2id.toString()).length
+  );
+});
+test("Test filter by sender", async () => {
+  const comment = testComment[0];
+  const response = await request(app).get(
+    `/comments/${comment.postId}?sender=${user._id}`
+  );
+  expect(response.statusCode).toBe(200);
+  expect(response.body.status).toBe("Success");
+  expect(response.body.data.length).toBe(2);
+  expect(response.body.data[0].sender).toBe(user._id.toString());
+});
+test("Update comment fail", async () => {
+  const comment = testComment[0];
+  comment.content = "Updated content";
+  const response = await request(app)
+    .put(`/comments/${comment._id}`)
+    .set({ authorization: "jwt " + user.accessToken });
+  expect(response.statusCode).toBe(400);
+  expect(response.body.status).toBe("Error");
+});
 
-  test("Test Delete comment", async () => {
-    const comment = testComment[0];
-    const response = await request(app)
-      .delete(`/posts/${comment.postId}/comments/${comment._id}`)
-      .set({ authorization: "jwt " + user.accessToken });
-    expect(response.statusCode).toBe(200);
-    expect(response.body.status).toBe("Success");
-  });
-  test("Delete comment by id fail", async () => {
-    const response = await request(app)
-      .delete(`/posts/${testComment[0].postId}/comments/${testComment[0]._id}`)
-      .set({ authorization: "jwt " + user.accessToken });
-    expect(response.statusCode).toBe(404);
-    expect(response.body.status).toBe("Error");
-  });
+test("Test Delete comment", async () => {
+  const comment = testComment[0];
+  const response = await request(app)
+    .delete(`/comments/${comment._id}`)
+    .set({ authorization: "jwt " + user.accessToken });
+  expect(response.statusCode).toBe(200);
+  expect(response.body.status).toBe("Success");
+});
+test("Delete comment by id fail", async () => {
+  const response = await request(app)
+    .delete(`/comments/${testComment[0]._id}`)
+    .set({ authorization: "jwt " + user.accessToken });
+  expect(response.statusCode).toBe(404);
+  expect(response.body.status).toBe("Error");
 });

@@ -15,8 +15,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/auth", auth_routes);
 app.use("/posts", posts_routes);
-app.use("/posts/:postId/comments", comments_routes);
+app.use("/comments", comments_routes);
 app.use("/users", users_routes);
+
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -30,6 +31,7 @@ const options = {
   apis: ["./src/routes/*.ts"],
 };
 const specs = swaggerJsDoc(options);
+
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 const initApp = (): Promise<Express> => {
@@ -54,4 +56,5 @@ const initApp = (): Promise<Express> => {
     }
   });
 };
+
 export default initApp;

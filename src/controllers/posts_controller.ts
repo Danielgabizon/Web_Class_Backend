@@ -21,7 +21,6 @@ class PostsController extends BaseController<IPost> {
       if (!content || content.trim() === "") {
         throw new Error("Please provide a post's content");
       }
-
       const post = { sender: userId, title: title, content: content };
       const newPost = await this.model.create(post);
 

@@ -47,7 +47,7 @@ import authController from "../controllers/auth_controller";
 
 /**
  * @swagger
- * /posts/{postId}/comments:
+ * /comments/{postId}:
  *  post:
  *    summary: Add a new comment to a post
  *    description: Adds a new comment for the authenticated user on the specified post.
@@ -95,7 +95,7 @@ import authController from "../controllers/auth_controller";
  *                  example: "Please provide a comment's content"
  */
 router.post(
-  "/",
+  "/:postId",
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     commentsController.addNewItem(req, res);
@@ -104,7 +104,7 @@ router.post(
 
 /**
  * @swagger
- * /posts/{postId}/comments:
+ * /comments/{postId}:
  *   get:
  *     summary: Get all comments for a specific post
  *     description: Retrieves all comments associated with a specific post.
@@ -145,13 +145,13 @@ router.post(
  *                  type: string
  *                  example: "An error occurred"
  */
-router.get("/", (req: Request, res: Response) => {
+router.get("/:postId", (req: Request, res: Response) => {
   commentsController.getAllItems(req, res);
 });
 
 /**
  * @swagger
- * /posts/{postId}/comments/{id}:
+ * /comments/{id}:
  *   put:
  *     summary: Update a specific comment
  *     description: Updates a specific comment by its ID within a given post.
@@ -240,7 +240,7 @@ router.put(
 
 /**
  * @swagger
- * /posts/{postId}/comments/{id}:
+ * /comments/{id}:
  *   delete:
  *     summary: Delete a comment
  *     description: Deletes a comment by its ID.
