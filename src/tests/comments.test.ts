@@ -2,9 +2,9 @@ import { Express } from "express";
 import request from 'supertest';
 import mongoose from "mongoose";
 import initApp from "../server";
- import userModel, { IUser } from "../models/users_model";
- import postModel, { IPost } from "../models/posts_model";
- import commentsModel, { IComment } from "../models/comments_model";
+import userModel, { IUser } from "../models/users_model";
+import postModel, { IPost } from "../models/posts_model";
+import commentsModel, { IComment } from "../models/comments_model";
 let app: Express;
 interface comment extends IComment {
   _id?: string;
@@ -85,7 +85,7 @@ afterAll(() => {
 
     test("create comments", async () => {
       for (const comment of testComment) {
-        const response = await request(app).post("/posts/"+comment.postId+"/comments")
+        const response = await request(app).post("/comments/"+comment.postId)
         .set({
           authorization: "jwt " + user.accessToken,
         })
@@ -102,7 +102,7 @@ afterAll(() => {
           sender: new mongoose.Types.ObjectId(),
           postId: new mongoose.Types.ObjectId(),
         };
-        const response = await request(app).post("/posts/"+comment.postId+"/comments")
+        const response = await request(app).post("/comments/"+comment.postId)
         .set({
           authorization: "jwt " + user.accessToken,
         }).send(comment);
@@ -110,20 +110,20 @@ afterAll(() => {
         expect(response.body.status).toBe("Error");
       });
     test("Get all comments by post1", async () => {
-      const response = await request(app).get("/posts/"+post1id+"/comments");
+      const response = await request(app).get("/comments/"+post1id);
       expect(response.statusCode).toBe(200);
       expect(response.body.status).toBe("Success");
       expect(response.body.data.length).toBe(testComment.filter((c) => c.postId.toString() === post1id.toString()).length);
     });
     test("Get all comments by post2", async () => {
-      const response = await request(app).get("/posts/"+post2id+"/comments");
+      const response = await request(app).get("/comments/"+post2id);
       expect(response.statusCode).toBe(200);
       expect(response.body.status).toBe("Success");
       expect(response.body.data.length).toBe(testComment.filter((c) => c.postId.toString() === post2id.toString()).length);
     });
     test("Test filter by sender", async () => {
       const comment = testComment[0];
-      const response = await request(app).get(`/posts/${comment.postId}/comments?sender=${user._id}`);
+      const response = await request(app).get(`/comments/${comment.postId}?sender=${user._id}`);
       expect(response.statusCode).toBe(200);
       expect(response.body.status).toBe("Success");
       expect(response.body.data.length).toBe(2);
@@ -132,7 +132,7 @@ afterAll(() => {
     test("Update comment fail", async () => {
       const comment = testComment[0];
       comment.content = "Updated content";
-      const response = await request(app).put(`/posts/${comment.postId}/comments/${comment._id}`)
+      const response = await request(app).put(`/comments/${comment._id}`)
       .set({ authorization: "jwt " + user.accessToken });
       expect(response.statusCode).toBe(400);
       expect(response.body.status).toBe("Error");
@@ -140,13 +140,13 @@ afterAll(() => {
 
     test("Test Delete comment", async () => {
       const comment = testComment[0];
-      const response = await request(app).delete(`/posts/${comment.postId}/comments/${comment._id}`)
+      const response = await request(app).delete(`/comments/${comment._id}`)
       .set({ authorization: "jwt " + user.accessToken });
       expect(response.statusCode).toBe(200);
       expect(response.body.status).toBe("Success");
     });
     test("Delete comment by id fail", async () => {
-      const response = await request(app).delete(`/posts/${testComment[0].postId}/comments/${testComment[0]._id}`)
+      const response = await request(app).delete(`/comments/${testComment[0]._id}`)
       .set({ authorization: "jwt " + user.accessToken });
       expect(response.statusCode).toBe(404);
       expect(response.body.status).toBe("Error");

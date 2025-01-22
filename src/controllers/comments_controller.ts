@@ -91,9 +91,6 @@ class commentsController extends BaseController<IComment> {
   }
   async deleteItem(req: Request, res: Response) {
     try {
-      const postId = req.params.postId; // The ID of the post to delete the comment on
-      if (!postId) throw new Error("Post not found");
-
       const userId = req.query.userId; // The user ID from query from auth token
       if (!userId) {
         throw new Error("User not found");
