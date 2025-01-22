@@ -5,7 +5,7 @@
   "scripts": {
     "start": "tsc && node ./dist/app.js",
     "dev": "nodemon ./src/app.ts",
-    "test": "tsc && jest --detectOpenHandles --forceExit",
+    "test": "tsc && jest --detectOpenHandles --forceExit --coverage",
     "testPost": "tsc && jest --detectOpenHandles --forceExit --verbose posts.test.ts",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit ./tests/auth.test.ts",
     "lint": "eslint . --ext .ts"
