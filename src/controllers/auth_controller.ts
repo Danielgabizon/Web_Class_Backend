@@ -11,7 +11,7 @@ const register = async (req: Request, res: Response) => {
     // Check if all required fields are provided
     const requiredFields = ["username", "password", "email", "fname", "lname"];
     for (const field of requiredFields) {
-      if (!user_info[field]) {
+      if (!user_info[field] || user_info[field] === "") {
         throw new Error("${field} is required");
       }
     }
@@ -19,7 +19,7 @@ const register = async (req: Request, res: Response) => {
     // check if user already exists
     const existingUser = await User.findOne({ username: user_info.username });
     if (existingUser) {
-      throw new Error("User already exists");
+      throw new Error("Username already exists");
     }
 
     // check if email already exists
@@ -32,7 +32,16 @@ const register = async (req: Request, res: Response) => {
     const salt = await bycrypt.genSalt(10);
     user_info.password = await bycrypt.hash(user_info.password, salt);
     const newUser = await User.create(user_info);
-    res.status(201).send({ status: "Success", data: newUser });
+    res.status(201).send({
+      status: "Success",
+      data: {
+        _id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        fname: newUser.fname,
+        lname: newUser.lname,
+      },
+    });
     return;
   } catch (error) {
     res.status(400).send({ status: "Error", message: error.message });
@@ -43,7 +52,7 @@ const login = async (req: Request, res: Response) => {
   try {
     // Check if all required fields are provided
     const { username, password } = req.body;
-    if (!username || !password)
+    if (!username || !password || username === "" || password === "")
       throw new Error("Username and password are required");
 
     // check if user exists
@@ -112,7 +121,7 @@ const logout = async (req: Request, res: Response) => {
   }
   jwt.verify(token, process.env.TOKEN_SECRET, async (err, payload: payload) => {
     if (err || !payload) {
-      res.status(403).send({ status: "Error", message: "Invalid token" });
+      res.status(403).send({ status: "Error", message: "Unauthorized" });
       return;
     }
     try {
@@ -129,7 +138,7 @@ const logout = async (req: Request, res: Response) => {
         await user.save();
         return res
           .status(403)
-          .send({ status: "Error", message: "Invalid token" });
+          .send({ status: "Error", message: "Unauthorized" });
       }
 
       // the refresh token is valid, remove it from the user
@@ -162,7 +171,7 @@ const refresh = async (req: Request, res: Response) => {
   }
   jwt.verify(token, process.env.TOKEN_SECRET, async (err, payload: payload) => {
     if (err || !payload) {
-      res.status(403).send({ status: "Error", message: "Invalid Token" });
+      res.status(403).send({ status: "Error", message: "Unauthorized" });
       return;
     }
     try {
@@ -176,7 +185,7 @@ const refresh = async (req: Request, res: Response) => {
       if (!user.refreshTokens.includes(token)) {
         user.refreshTokens = []; // invalidate all refresh tokens
         await user.save();
-        res.status(403).send({ status: "Error", message: "Invalid token" });
+        res.status(403).send({ status: "Error", message: "Unauthorized" });
         return;
       }
 
@@ -239,9 +248,7 @@ const authTestMiddleware = (
   }
   jwt.verify(token, process.env.TOKEN_SECRET, (err, payload: payload) => {
     if (err || !payload) {
-      res
-        .status(403)
-        .send({ status: "Error", message: "Invalid or expired token" });
+      res.status(403).send({ status: "Error", message: "Unauthorized" });
       return;
     }
     // Attach user ID to request for downstream handlers

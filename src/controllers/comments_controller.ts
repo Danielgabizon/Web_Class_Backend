@@ -2,6 +2,7 @@ import Comments, { IComment } from "../models/comments_model";
 import BaseController from "./base_controller";
 import { Model } from "mongoose";
 import { Request, Response } from "express";
+import Posts from "../models/posts_model";
 
 class commentsController extends BaseController<IComment> {
   constructor(model: Model<IComment>) {
@@ -11,18 +12,23 @@ class commentsController extends BaseController<IComment> {
   async addNewItem(req: Request, res: Response): Promise<Response> {
     try {
       const senderId = req.query.userId; // The ID of the user making the comment
-      if (!senderId) throw new Error("User not found");
+
       const postId = req.params.postId; // The ID of the post to comment on
-      if (!postId) throw new Error("Post not found");
+      // check if the post exists
+      const post = await Posts.findById(postId);
+      if (!post) {
+        return res
+          .status(404)
+          .send({ status: "Error", message: "Post not found" });
+      }
+
       const content = req.body.content; // The content of the comment
       if (!content || content.trim() === "") {
         throw new Error("Please provide a comment's content");
       }
 
-      const comment = { postId: postId, sender: senderId, content: content };
-      const new_comment = await this.model.create(comment);
-
-      return res.status(201).send({ status: "Success", data: new_comment });
+      req.body = { ...req.body, postId: postId, sender: senderId }; // Add the post ID and sender ID to the comment
+      return await super.addNewItem(req, res);
     } catch (error) {
       return res.status(400).send({ status: "Error", message: error.message });
     }
@@ -30,12 +36,17 @@ class commentsController extends BaseController<IComment> {
 
   async getAllItems(req: Request, res: Response): Promise<Response> {
     try {
-      const postId = req.params.postId; // The Id of the post to get comments for
-      if (!postId) throw new Error("Post not found");
+      const filter: Record<string, any> = req.query.postId
+        ? { postId: req.query.postId }
+        : {};
 
-      const comments = await Comments.find({ postId: postId });
+      if (Object.keys(filter).length > 0) {
+        // If a filter is applied
+        const comments = await Comments.find(filter);
+        return res.status(200).send({ status: "Success", data: comments });
+      }
 
-      return res.status(200).send({ status: "Success", data: comments });
+      return await super.getAllItems(req, res); // Call the base implementation if no filter is applied
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }
@@ -44,12 +55,6 @@ class commentsController extends BaseController<IComment> {
   async updateItem(req: Request, res: Response) {
     try {
       const userId = req.query.userId; // The user ID from query from auth token
-      if (!userId) {
-        throw new Error("User not found");
-      }
-
-      const postId = req.params.postId; // The ID of the post to update the comment on
-      if (!postId) throw new Error("Post not found");
 
       // retrieving the existing comment to check ownership
 
@@ -62,27 +67,21 @@ class commentsController extends BaseController<IComment> {
           .send({ status: "Error", message: "Comment not found" });
       }
 
-      // Check if the user is the owner of the post
+      // Check if the user is the owner of the comment
       if (existingComment.sender.toString() !== userId) {
         return res.status(403).send({
           status: "Error",
-          message: "Unauthorized to update this comment",
+          message: "Unauthorized",
         });
       }
 
       const content = req.body.content; // The content of the comment
+
       if (!content || content.trim() === "") {
         throw new Error("Please provide a comment's content");
       }
 
-      // Update the item and return the updated document
-      const updatedComment = await this.model.findByIdAndUpdate(
-        commentId, // The ID of the item to update
-        { content: content }, // The content to update
-        { new: true } // return the updated document
-      );
-
-      return res.status(200).send({ status: "Success", data: updatedComment });
+      return await super.updateItem(req, res);
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }
@@ -90,9 +89,6 @@ class commentsController extends BaseController<IComment> {
   async deleteItem(req: Request, res: Response) {
     try {
       const userId = req.query.userId; // The user ID from query from auth token
-      if (!userId) {
-        throw new Error("User not found");
-      }
 
       // retrieving the existing comment to check ownership
 
@@ -105,16 +101,15 @@ class commentsController extends BaseController<IComment> {
           .send({ status: "Error", message: "Comment not found" });
       }
 
-      // Check if the user is the owner of the post
+      // Check if the user is the owner of the comment
       if (existingComment.sender.toString() !== userId) {
         return res.status(403).send({
           status: "Error",
-          message: "Unauthorized to delete this comment",
+          message: "Unauthorized",
         });
       }
 
-      await this.model.findByIdAndDelete(commentId);
-      return res.status(200).send({ status: "Success", data: "" });
+      return await super.deleteItem(req, res);
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }

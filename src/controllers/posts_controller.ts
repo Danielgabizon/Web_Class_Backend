@@ -10,7 +10,6 @@ class PostsController extends BaseController<IPost> {
   async addNewItem(req: Request, res: Response): Promise<Response> {
     try {
       const userId = req.query.userId; // The user Id
-      if (!userId) throw new Error("User not found");
 
       const { title, content } = req.body;
 
@@ -21,10 +20,9 @@ class PostsController extends BaseController<IPost> {
       if (!content || content.trim() === "") {
         throw new Error("Please provide a post's content");
       }
-      const post = { sender: userId, title: title, content: content };
-      const newPost = await this.model.create(post);
 
-      return res.status(201).send({ status: "Success", data: newPost });
+      req.body = { ...req.body, sender: userId }; // add the sender to the request body
+      return await super.addNewItem(req, res); // call the base implementation
     } catch (error) {
       return res.status(400).send({ status: "Error", message: error.message });
     }
@@ -33,20 +31,22 @@ class PostsController extends BaseController<IPost> {
     try {
       const filter = req.query.sender ? { sender: req.query.sender } : {};
 
-      const posts = await this.model.find(filter);
-      return res.status(200).send({ status: "Success", data: posts });
+      if (filter) {
+        const posts = await this.model.find(filter);
+        return res.status(200).send({ status: "Success", data: posts });
+      }
+
+      // call the base implementation if no specific filter is applied
+      return await super.getAllItems(req, res);
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }
   }
+
   async updateItem(req: Request, res: Response) {
     try {
       const postId = req.params.id; // The post's ID
       const userId = req.query.userId; // The user ID from query from auth token
-
-      if (!userId) {
-        throw new Error("User not found");
-      }
 
       // retrieving the existing post to check ownership
       const existingPost = await this.model.findById(postId);
@@ -61,7 +61,7 @@ class PostsController extends BaseController<IPost> {
       if (existingPost.sender.toString() !== userId) {
         return res.status(403).send({
           status: "Error",
-          message: "Unauthorized to update this post",
+          message: "Unauthorized",
         });
       }
 
@@ -75,16 +75,7 @@ class PostsController extends BaseController<IPost> {
         throw new Error("Please provide a post's content");
       }
 
-      const updatedData = { title: title, content: content };
-
-      // updating the item and return the updated document
-      const updatedPost = await this.model.findByIdAndUpdate(
-        postId,
-        updatedData,
-        { new: true }
-      );
-
-      return res.status(200).send({ status: "Success", data: updatedPost });
+      return await super.updateItem(req, res); // Call the base implementation
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }
@@ -94,10 +85,6 @@ class PostsController extends BaseController<IPost> {
       const postId = req.params.id; // The post's ID
       const userId = req.query.userId; // The user ID from query from auth token
 
-      if (!userId) {
-        throw new Error("User not found");
-      }
-
       // retrieving the existing post to check ownership
       const existingPost = await this.model.findById(postId);
 
@@ -111,16 +98,13 @@ class PostsController extends BaseController<IPost> {
       if (existingPost.sender.toString() !== userId) {
         return res.status(403).send({
           status: "Error",
-          message: "Unauthorized to delete this post",
+          message: "Unauthorized",
         });
       }
-
-      // deleting the item and return the deleted document
-      const deletedPost = await this.model.findByIdAndDelete(postId);
       // delete all comments associated with the post
       await Comments.deleteMany({ postId: postId });
-
-      return res.status(200).send({ status: "Success", data: deletedPost });
+      // call the base implementation
+      return await super.deleteItem(req, res);
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }

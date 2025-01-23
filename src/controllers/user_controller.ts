@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import User from "../models/users_model";
-import postController from "./posts_controller";
-const getCurrentUser = async (req: Request, res: Response) => {
+import Post from "../models/posts_model";
+const getUserDetails = async (req: Request, res: Response) => {
   try {
-    const userId = req.query.userId;
-    const user = await User.findById(userId).select("-password");
+    const userId = req.params.id;
+    const user = await User.findById(userId).select("-password -refreshTokens");
     if (!user) {
       res.status(404).send({ status: "Error", message: "User not found" });
       return;
@@ -15,22 +15,10 @@ const getCurrentUser = async (req: Request, res: Response) => {
   }
 };
 
-const getUserPosts = async (req: Request, res: Response) => {
+const updateUserDetails = async (req: Request, res: Response) => {
   try {
-    const userId = req.query.userId;
-    // Use postController logic for filtering by sender
-    req.query.sender = userId; // Add sender filter dynamically
-    await postController.getAllItems(req, res);
-  } catch (err) {
-    res.status(400).send({ status: "Error", message: err.message });
-  }
-};
-
-const updateCurrentUser = async (req: Request, res: Response) => {
-  try {
-    const userId = req.query.userId;
+    const userId = req.params.id;
     const { username } = req.body;
-    if (!userId) throw new Error("User not found");
 
     if (!username || username.trim() === "")
       throw new Error("Please provide a username");
@@ -43,25 +31,13 @@ const updateCurrentUser = async (req: Request, res: Response) => {
     // Update
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { username: username },
+      req.body,
       { new: true, runValidators: true } // Return updated document
-    ).select("-password");
+    ).select("-password -refreshToken");
     res.status(200).send({ status: "Success", data: updatedUser });
   } catch (err) {
     res.status(400).send({ status: "Error", message: err.message });
   }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
-  try {
-    const userId = req.query.userId;
-    if (!userId) throw new Error("User not found");
-
-    await User.findByIdAndDelete(userId);
-    res.status(200).send({ status: "Success", message: "User deleted" });
-  } catch (err) {
-    res.status(400).send({ status: "Error", message: err.message });
-  }
-};
-
-export default { getCurrentUser, updateCurrentUser, deleteUser, getUserPosts };
+export default { getUserDetails, updateUserDetails };

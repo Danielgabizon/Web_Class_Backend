@@ -90,6 +90,34 @@ const router = express.Router();
  *                 message:
  *                   type: string
  *                   example: "Validation error"
+ *       401:
+ *        description: No token provided
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: Access denied
+ *       403:
+ *        description: Unauthorized to create post
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: Unauthorized
+ *
+ *
  */
 router.post(
   "/",
@@ -229,7 +257,7 @@ router.get("/:id", (req: Request, res: Response) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PostInput'
+ *             $ref: '#/components/schemas/Post'
  *     responses:
  *       200:
  *         description: Successfully updated the post
@@ -281,7 +309,20 @@ router.get("/:id", (req: Request, res: Response) => {
  *                  example: Error
  *                message:
  *                  type: string
- *                  example: Unauthorized to update this post
+ *                  example: Unauthorized
+ *       401:
+ *        description: No token provided
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: Access denied
  */
 router.put(
   "/:id",
@@ -359,7 +400,20 @@ router.put(
  *                  example: Error
  *                message:
  *                  type: string
- *                  example: Unauthorized to delete this post
+ *                  example: Unauthorized
+ *       401:
+ *        description: No token provided
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                status:
+ *                  type: string
+ *                  example: Error
+ *                message:
+ *                  type: string
+ *                  example: Access denied
  */
 router.delete(
   "/:id",

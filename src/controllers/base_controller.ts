@@ -47,11 +47,7 @@ class BaseController<T> {
         updateContent, // The content to update
         { new: true, runValidators: true } // Options: return the updated document and validate the update
       );
-      if (!updatedItem) {
-        return res
-          .status(404)
-          .send({ status: "Error", message: "item not found" });
-      }
+
       return res.status(200).send({ status: "Success", data: updatedItem });
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });

@@ -82,8 +82,16 @@ const router = express.Router();
  *         description: User successfully registered
  *         content:
  *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/TokenResponse'
+ *            schema:
+ *              type: object
+ *              properties:
+ *                  status:
+ *                      type: string
+ *                      example: Success
+ *                  data:
+ *                      $ref: '#/components/schemas/User'
+ *
+ *
  *       400:
  *         description: Validation error or user already exists
  *         content:

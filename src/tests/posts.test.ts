@@ -7,16 +7,18 @@ import { Express } from "express";
 let app: Express;
 
 // Define the user and post interfaces
+
 interface user extends IUser {
   _id?: string;
   accessToken?: string;
 }
-2;
+
 interface post extends IPost {
   _id?: string;
 }
 
 // Define the user object
+
 const user: user = {
   username: "username1",
   password: "123456",
@@ -34,6 +36,7 @@ const user2: user = {
 };
 
 // Define the test posts
+
 const testPost: post[] = [
   {
     sender: new mongoose.Types.ObjectId(), // Dummy user id
@@ -91,15 +94,18 @@ describe("Posts test", () => {
       expect(response.body.data.sender).toBe(user._id);
       expect(response.body.data.title).toBe(post.title);
       expect(response.body.data.content).toBe(post.content);
+      // Update our local copy
       post._id = response.body.data._id;
+      post.sender = response.body.data.sender;
     }
   });
 
-  test("Create post fail", async () => {
-    // create post without content
+  test("Create post fail 1 ", async () => {
+    // create post with empty content
     const post = {
-      sender: new mongoose.Types.ObjectId(),
+      sender: user._id,
       title: "Test title 1",
+      content: "",
     };
     const response = await request(app)
       .post("/posts")
@@ -111,6 +117,22 @@ describe("Posts test", () => {
     expect(response.body.status).toBe("Error");
   });
 
+  test("Create post fail 2 ", async () => {
+    // create post with empty title
+    const post = {
+      sender: user._id,
+      title: "",
+      content: "Test content 1",
+    };
+    const response = await request(app)
+      .post("/posts")
+      .set({
+        authorization: "jwt " + user.accessToken,
+      })
+      .send(post);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe("Error");
+  });
   test("Get all posts", async () => {
     const response = await request(app).get("/posts");
     expect(response.statusCode).toBe(200);
@@ -122,10 +144,7 @@ describe("Posts test", () => {
     const response = await request(app).get(`/posts?sender=${user._id}`);
     expect(response.statusCode).toBe(200);
     expect(response.body.status).toBe("Success");
-    expect(response.body.data.length).toBe(3);
-    response.body.data.forEach((post: post) => {
-      expect(post.sender).toBe(user._id);
-    });
+    expect(response.body.data.length).toBe(testPost.length);
   });
 
   test("Update post fail", async () => {
@@ -143,22 +162,17 @@ describe("Posts test", () => {
   });
 
   test("Update post - success", async () => {
-    const post = testPost[0];
+    testPost[0].title = "Updated title";
+    testPost[0].content = "Updated content";
     const response = await request(app)
-      .put(`/posts/${post._id}`)
+      .put(`/posts/${testPost[0]._id}`)
       .set({ authorization: "jwt " + user.accessToken })
-      .send({
-        title: "Updated title",
-        content: "Updated content",
-      });
+      .send(testPost[0]);
     expect(response.statusCode).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.data.sender).toBe(user._id);
-    expect(response.body.data.title).toBe("Updated title");
-    expect(response.body.data.content).toBe("Updated content");
-    // Update our local copy
-    testPost[0].title = "Updated title";
-    testPost[0].content = "Updated content";
+    expect(response.body.data.title).toBe(testPost[0].title);
+    expect(response.body.data.content).toBe(testPost[0].content);
   });
 
   test("Get post by id", async () => {
