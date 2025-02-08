@@ -6,18 +6,28 @@ import mongoose from "mongoose";
 import swaggerUI from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 import bodyParser from "body-parser";
+
 import posts_routes from "./routes/posts_routes";
 import auth_routes from "./routes/auth_routes";
 import comments_routes from "./routes/comments_routes";
 import users_routes from "./routes/users_routes";
+import file_routes from "./routes/file_routes";
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "*");
+  res.header("Access-Control-Allow-Headers", "*");
+  next();
+});
+
 app.use("/auth", auth_routes);
 app.use("/posts", posts_routes);
 app.use("/comments", comments_routes);
 app.use("/users", users_routes);
-
+app.use("/public/", express.static("public"));
+app.use("/file", file_routes);
 const options = {
   definition: {
     openapi: "3.0.0",

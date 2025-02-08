@@ -7,7 +7,7 @@ export interface IUser {
   fname: string;
   lname: string;
   refreshTokens?: string[];
-};
+}
 
 const Schema = mongoose.Schema;
 
@@ -25,7 +25,6 @@ const userSchema = new Schema<IUser>({
   email: {
     type: String,
     required: true,
-    match: [/^\S+@\S+\.\S+$/, "Invalid email address"],
     trim: true,
     unique: true,
   },

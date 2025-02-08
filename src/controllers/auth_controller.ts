@@ -12,8 +12,27 @@ const register = async (req: Request, res: Response) => {
     const requiredFields = ["username", "password", "email", "fname", "lname"];
     for (const field of requiredFields) {
       if (!user_info[field] || user_info[field] === "") {
-        throw new Error("${field} is required");
+        throw new Error("All fields are required");
       }
+    }
+    // Vaildate username format - 8 characters, letters and numbers only
+    const usernameRegex = /^[A-Za-z0-9]{8,}$/;
+    if (!usernameRegex.test(user_info.username)) {
+      throw new Error(
+        "Username must be at least 8 characters long and include only letters and numbers"
+      );
+    }
+    // Validate password strength - 8 characters, 1 capital letter, 1 small letter, 1 number and 1 special character
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(user_info.password)) {
+      throw new Error(
+        "Password must be at least 8 characters long and include at least 1 capital letter, 1 small letter, 1 number and 1 special character"
+      );
+    }
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user_info.email)) {
+      throw new Error("Invalid email");
     }
 
     // check if user already exists
@@ -64,7 +83,7 @@ const login = async (req: Request, res: Response) => {
     // check if password is correct
     const validPassword = await bycrypt.compare(password, user.password);
     if (!validPassword) {
-      throw new Error("User or password is incorrect");
+      throw new Error("Username or password is incorrect");
     }
 
     // Create an access token
