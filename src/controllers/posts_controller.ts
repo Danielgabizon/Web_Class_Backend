@@ -3,6 +3,7 @@ import Posts, { IPost } from "../models/posts_model";
 import BaseController from "./base_controller";
 import { Model } from "mongoose";
 import Comments from "../models/comments_model";
+import mongoose from "mongoose";
 class PostsController extends BaseController<IPost> {
   constructor(model: Model<IPost>) {
     super(model);
@@ -109,7 +110,42 @@ class PostsController extends BaseController<IPost> {
       return res.status(400).send({ status: "Error", message: err.message });
     }
   }
+  async toggleLike(req: Request, res: Response) {
+    try {
+      const postId = req.params.id; // The post's ID
+      const userId = req.query.userId as string; // The user ID from query from auth token
+
+      const existingPost = await this.model.findById(postId);
+
+      if (!existingPost) {
+        return res
+          .status(404)
+          .send({ status: "Error", message: "Post not found" });
+      }
+      const likes = existingPost.likes.map((like) => like.toString());
+
+      const isLiked = likes.includes(userId);
+
+      if (isLiked) {
+        // remove the like
+        existingPost.likes = existingPost.likes.filter(
+          (like) => like.toString() !== userId
+        );
+      } else {
+        // add the like
+        existingPost.likes.push(new mongoose.Types.ObjectId(userId));
+      }
+      existingPost.save();
+      return res.status(200).send({
+        status: "Success",
+        data: existingPost,
+      });
+    } catch (err) {
+      return res.status(400).send({ status: "Error", message: err.message });
+    }
+  }
 }
+
 const postController = new PostsController(Posts);
 
 export default postController;

@@ -30,6 +30,12 @@ const router = express.Router();
  *         sender:
  *           type: string
  *           example: 64d2f34c9b3d5e001ee0fede
+ *         likes:
+ *           type: array
+ *           items:
+ *            type: string
+ *            example: ["64d2f34c9b3d5e001ee0fede", "64d2f34c9b3d5e001ee0fedc"]
+ *
  *     PostInput:
  *       type: object
  *       required:
@@ -159,7 +165,7 @@ router.post(
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Post'
+ *                    $ref: '#/components/schemas/Post'
  *       400:
  *         description: Error retrieving posts
  *         content:
@@ -420,6 +426,82 @@ router.delete(
   authController.authTestMiddleware,
   (req: Request, res: Response) => {
     postController.deleteItem(req, res);
+  }
+);
+/**
+ * @swagger
+ * /posts/like/{id}:
+ *   put:
+ *     summary: Like or unlike a post
+ *     description: Toggles a like for the authenticated user on a specific post.
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
+ *     responses:
+ *       200:
+ *         description: Successfully toggled like on the post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Success
+ *                 data:
+ *                  $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: Post not found
+ *       400:
+ *         description: Error toggling like
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: An error occurred
+ *       401:
+ *         description: No token provided
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: Access denied
+ */
+router.put(
+  "/like/:id",
+  authController.authTestMiddleware,
+  (req: Request, res: Response) => {
+    postController.toggleLike(req, res);
   }
 );
 

@@ -2,10 +2,11 @@ import mongoose, { Schema } from "mongoose";
 
 // Interface for the Post document
 export interface IPost {
-  sender: mongoose.Types.ObjectId; // Refers to a User ID
+  sender: mongoose.Types.ObjectId;
   title: string;
   content: string;
   postUrl?: string;
+  likes: mongoose.Types.ObjectId[];
 }
 
 // Define the Posts schema
@@ -29,6 +30,13 @@ const postSchema = new Schema<IPost>({
   postUrl: {
     type: String,
   },
+  likes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: [],
+    },
+  ],
 });
 
 // Export the model
