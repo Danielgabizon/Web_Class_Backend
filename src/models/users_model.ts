@@ -6,6 +6,7 @@ export interface IUser {
   email: string;
   fname: string;
   lname: string;
+  profileUrl: string;
   refreshTokens?: string[];
 }
 
@@ -37,6 +38,9 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true,
     trim: true,
+  },
+  profileUrl: {
+    type: String,
   },
   refreshTokens: {
     type: [String],

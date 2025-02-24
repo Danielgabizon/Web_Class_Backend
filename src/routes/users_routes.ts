@@ -32,12 +32,63 @@ const router = express.Router();
  *             lname:
  *               type: string
  *               example: Doe
+ *             profileUrl:
+ *               type: string
+ *               example: https://example.com/profile.jpg
+ *
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
  */
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Retrieve all users with optional filtering
+ *     description: Fetches a list of all users. Allows filtering by username using query parameters.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *         description: Filter users by their username (case-insensitive)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred"
+ */
+
+router.get("/", userController.getAllUsers);
 
 /**
  * @swagger
@@ -95,7 +146,7 @@ const router = express.Router();
  *                  type: string
  *                  example: "An error occurred"
  */
-router.get("/:id", userController.getUserDetails);
+router.get("/:id", userController.getUserDetailsById);
 
 /**
  * @swagger

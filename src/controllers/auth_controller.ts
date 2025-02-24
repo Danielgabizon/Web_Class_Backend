@@ -9,7 +9,14 @@ const register = async (req: Request, res: Response) => {
   try {
     const user_info = req.body;
     // Check if all required fields are provided
-    const requiredFields = ["username", "password", "email", "fname", "lname"];
+    const requiredFields = [
+      "username",
+      "password",
+      "email",
+      "fname",
+      "lname",
+      "profileUrl",
+    ];
     for (const field of requiredFields) {
       if (!user_info[field] || user_info[field] === "") {
         throw new Error("All fields are required");
@@ -112,6 +119,7 @@ const login = async (req: Request, res: Response) => {
       data: {
         _id: user._id,
         username: user.username,
+        userPic: user.profileUrl,
         accessToken: accessToken,
         refreshToken: refreshToken,
       },

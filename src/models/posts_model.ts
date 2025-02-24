@@ -5,6 +5,7 @@ export interface IPost {
   sender: mongoose.Types.ObjectId; // Refers to a User ID
   title: string;
   content: string;
+  postUrl?: string;
 }
 
 // Define the Posts schema
@@ -24,6 +25,9 @@ const postSchema = new Schema<IPost>({
     type: String,
     required: true,
     trim: true,
+  },
+  postUrl: {
+    type: String,
   },
 });
 

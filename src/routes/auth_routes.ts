@@ -77,6 +77,9 @@ const router = express.Router();
  *               lname:
  *                 type: string
  *                 example: Doe
+ *               profileUrl:
+ *                 type: string
+ *                 example: http://localhost:3000/public\1739128887710.png
  *     responses:
  *       201:
  *         description: User successfully registered

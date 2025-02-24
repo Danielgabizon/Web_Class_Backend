@@ -44,27 +44,19 @@ const specs = swaggerJsDoc(options);
 
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
-const initApp = (): Promise<Express> => {
-  return new Promise<Express>((resolve, reject) => {
-    const db = mongoose.connection;
-    db.on("error", (error) => console.error(error));
-    db.once("open", () => console.log("Connected to Database"));
-    if (!process.env.DB_CONNECT) {
-      console.error("Missing auth configuration");
-      reject("Missing auth configuration");
-    } else {
-      mongoose
-        .connect(process.env.DB_CONNECT)
-        .then(() => {
-          console.log("Database connected");
-          resolve(app);
-        })
-        .catch((error) => {
-          console.error("Database connection failed", error);
-          reject(error);
-        });
-    }
-  });
-};
+const initApp = async (): Promise<Express> => {
+  if (!process.env.DB_CONNECT) {
+    console.error("Missing auth configuration");
+    throw new Error("Missing auth configuration");
+  }
 
+  try {
+    await mongoose.connect(process.env.DB_CONNECT);
+    console.log("Connected to Database");
+    return app;
+  } catch (error) {
+    console.error("Database connection failed", error);
+    throw error;
+  }
+};
 export default initApp;

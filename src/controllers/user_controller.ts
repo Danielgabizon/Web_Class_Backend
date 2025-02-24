@@ -1,7 +1,23 @@
 import { Request, Response } from "express";
 import User from "../models/users_model";
-import Post from "../models/posts_model";
-const getUserDetails = async (req: Request, res: Response) => {
+
+const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const filter = req.query.username ? { username: req.query.username } : {};
+    const users = await User.find(filter).select("-password -refreshTokens");
+    res.status(200).json({
+      status: "Success",
+      data: users,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "Error",
+      message: "An error occurred",
+    });
+  }
+};
+
+const getUserDetailsById = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
     const user = await User.findById(userId).select("-password -refreshTokens");
@@ -40,4 +56,8 @@ const updateUserDetails = async (req: Request, res: Response) => {
   }
 };
 
-export default { getUserDetails, updateUserDetails };
+export default {
+  getUserDetailsById,
+  getAllUsers,
+  updateUserDetails,
+};
