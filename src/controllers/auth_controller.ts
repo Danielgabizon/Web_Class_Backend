@@ -66,6 +66,7 @@ const register = async (req: Request, res: Response) => {
         email: newUser.email,
         fname: newUser.fname,
         lname: newUser.lname,
+        profileUrl: newUser.profileUrl,
       },
     });
     return;
@@ -119,7 +120,7 @@ const login = async (req: Request, res: Response) => {
       data: {
         _id: user._id,
         username: user.username,
-        userPic: user.profileUrl,
+        profileUrl: user.profileUrl,
         accessToken: accessToken,
         refreshToken: refreshToken,
       },

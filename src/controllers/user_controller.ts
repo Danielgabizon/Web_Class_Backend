@@ -34,16 +34,37 @@ const getUserDetailsById = async (req: Request, res: Response) => {
 const updateUserDetails = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id;
-    const { username } = req.body;
+    const user_info = req.body;
+    const requiredFields = ["username", "email", "fname", "lname"];
+    for (const field of requiredFields) {
+      if (!user_info[field] || user_info[field] === "") {
+        throw new Error("All fields are required");
+      }
+    }
+    // Vaildate username format - 8 characters, letters and numbers only
+    const usernameRegex = /^[A-Za-z0-9]{8,}$/;
+    if (!usernameRegex.test(user_info.username)) {
+      throw new Error(
+        "Username must be at least 8 characters long and include only letters and numbers"
+      );
+    }
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user_info.email)) {
+      throw new Error("Invalid email");
+    }
 
-    if (!username || username.trim() === "")
-      throw new Error("Please provide a username");
+    // check if user already exists
+    const existingUser = await User.findOne({ username: user_info.username });
+    if (existingUser && existingUser._id.toString() !== userId) {
+      throw new Error("Username already exists");
+    }
 
-    // Check if the username is already taken by another user
-    const existingUser = await User.findOne({ username });
-    if (existingUser && existingUser.id !== userId)
-      throw new Error("Username already taken");
-
+    // check if email already exists
+    const existingEmail = await User.findOne({ email: user_info.email });
+    if (existingEmail && existingEmail._id.toString() !== userId) {
+      throw new Error("Email already exists");
+    }
     // Update
     const updatedUser = await User.findByIdAndUpdate(
       userId,

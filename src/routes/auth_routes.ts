@@ -35,6 +35,9 @@ const router = express.Router();
  *             refreshToken:
  *               type: string
  *               example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *             profileUrl:
+ *               type: string
+ *               example: http://localhost:3000/public\1739128887710.png
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -61,6 +64,7 @@ const router = express.Router();
  *               - email
  *               - fname
  *               - lname
+ *               - profileUrl
  *             properties:
  *               username:
  *                 type: string
