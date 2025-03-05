@@ -4,6 +4,9 @@ import BaseController from "./base_controller";
 import { Model } from "mongoose";
 import Comments from "../models/comments_model";
 import mongoose from "mongoose";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
+dotenv.config();
 class PostsController extends BaseController<IPost> {
   constructor(model: Model<IPost>) {
     super(model);
@@ -30,15 +33,30 @@ class PostsController extends BaseController<IPost> {
   }
   async getAllItems(req: Request, res: Response): Promise<Response> {
     try {
+      const current_page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 3;
+      const skip = (current_page - 1) * limit;
+
+      // apply a filter if we are searching by sender (userId)
       const filter = req.query.sender ? { sender: req.query.sender } : {};
 
-      if (filter) {
-        const posts = await this.model.find(filter);
-        return res.status(200).send({ status: "Success", data: posts });
-      }
+      const posts = await this.model
+        .find(filter)
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 });
+      const totalPosts = await this.model.countDocuments(filter);
 
-      // call the base implementation if no specific filter is applied
-      return await super.getAllItems(req, res);
+      // Send the response with posts and pagination info
+      return res.status(200).send({
+        status: "Success",
+        data: posts,
+        pagination: {
+          totalPages: Math.ceil(totalPosts / limit), // Total pages
+          currentPage: current_page, // Current page
+          totalPosts, // Total number of posts
+        },
+      });
     } catch (err) {
       return res.status(400).send({ status: "Error", message: err.message });
     }

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import User from "../models/users_model";
 import bycrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 type payload = {
   _id: string;
 };
@@ -126,6 +127,69 @@ const login = async (req: Request, res: Response) => {
       },
     });
     return;
+  } catch (error) {
+    res.status(400).send({ status: "Error", message: error.message });
+    return;
+  }
+};
+
+const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const client = new OAuth2Client();
+    const ticket = await client.verifyIdToken({
+      idToken: req.body.credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload) {
+      throw new Error("Invalid token");
+    }
+    const email = payload.email;
+    if (email) {
+      let user = await User.findOne({ email: email });
+      if (!user) {
+        user = await User.create({
+          username: email.split("@")[0],
+          password: email + process.env.TOKEN_SECRET,
+          email: email,
+          fname: payload.given_name,
+          lname: payload.family_name,
+          profileUrl: payload.picture,
+        });
+      }
+
+      // Create an access token
+      const rand1 = Math.floor(Math.random() * 1000000);
+      const accessToken = jwt.sign(
+        { _id: user._id, random: rand1 },
+        process.env.TOKEN_SECRET,
+        { expiresIn: process.env.TOKEN_EXPIRATION }
+      );
+
+      // Create a refresh token
+      const rand2 = Math.floor(Math.random() * 1000000);
+      const refreshToken = jwt.sign(
+        { _id: user._id, random: rand2 },
+        process.env.TOKEN_SECRET,
+        { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
+      );
+
+      // save refresh token to db
+      if (!user.refreshTokens) user.refreshTokens = [];
+      user.refreshTokens.push(refreshToken);
+      await user.save();
+
+      res.status(200).send({
+        status: "Success",
+        data: {
+          _id: user._id,
+          username: user.username,
+          profileUrl: user.profileUrl,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+        },
+      });
+    }
   } catch (error) {
     res.status(400).send({ status: "Error", message: error.message });
     return;
@@ -288,6 +352,7 @@ const authTestMiddleware = (
 const auth_controller = {
   register,
   login,
+  googleLogin,
   logout,
   refresh,
   authTestMiddleware,

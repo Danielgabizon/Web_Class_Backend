@@ -3,7 +3,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 dotenv.config();
 const router = express.Router();
-
 const genAI = new GoogleGenerativeAI(process.env.GEMIINI_API_KEY || ""); // Ensure API key is set
 const generationConfig = {
   temperature: 0.9,

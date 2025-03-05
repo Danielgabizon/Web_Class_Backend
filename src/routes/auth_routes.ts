@@ -160,6 +160,7 @@ router.post("/register", authController.register);
  *                   example: "Username or password is incorrect."
  */
 router.post("/login", authController.login);
+router.post("/google", authController.googleLogin);
 
 /**
  * @swagger

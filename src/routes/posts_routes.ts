@@ -35,6 +35,10 @@ const router = express.Router();
  *           items:
  *            type: string
  *            example: ["64d2f34c9b3d5e001ee0fede", "64d2f34c9b3d5e001ee0fedc"]
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           example: 2025-02-02T12:00:00.000Z
  *
  *     PostInput:
  *       type: object
