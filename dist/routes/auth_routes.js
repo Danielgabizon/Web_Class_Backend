@@ -37,6 +37,9 @@ const router = express_1.default.Router();
  *             refreshToken:
  *               type: string
  *               example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *             profileUrl:
+ *               type: string
+ *               example: http://localhost:3000/public\1739128887710.png
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -62,6 +65,7 @@ const router = express_1.default.Router();
  *               - email
  *               - fname
  *               - lname
+ *               - profileUrl
  *             properties:
  *               username:
  *                 type: string
@@ -78,6 +82,9 @@ const router = express_1.default.Router();
  *               lname:
  *                 type: string
  *                 example: Doe
+ *               profileUrl:
+ *                 type: string
+ *                 example: http://localhost:3000/public\1739128887710.png
  *     responses:
  *       201:
  *         description: User successfully registered
@@ -153,6 +160,7 @@ router.post("/register", auth_controller_1.default.register);
  *                   example: "Username or password is incorrect."
  */
 router.post("/login", auth_controller_1.default.login);
+router.post("/google", auth_controller_1.default.googleLogin);
 /**
  * @swagger
  * /auth/logout:

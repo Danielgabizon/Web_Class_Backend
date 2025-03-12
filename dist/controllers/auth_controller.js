@@ -15,15 +15,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const users_model_1 = __importDefault(require("../models/users_model"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const google_auth_library_1 = require("google-auth-library");
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user_info = req.body;
         // Check if all required fields are provided
-        const requiredFields = ["username", "password", "email", "fname", "lname"];
+        const requiredFields = [
+            "username",
+            "password",
+            "email",
+            "fname",
+            "lname",
+            "profileUrl",
+        ];
         for (const field of requiredFields) {
             if (!user_info[field] || user_info[field] === "") {
-                throw new Error("${field} is required");
+                throw new Error("All fields are required");
             }
+        }
+        // Vaildate username format - 8 characters, letters and numbers only
+        const usernameRegex = /^[A-Za-z0-9]{8,}$/;
+        if (!usernameRegex.test(user_info.username)) {
+            throw new Error("Username must be at least 8 characters long and include only letters and numbers");
+        }
+        // Validate password strength - 8 characters, 1 capital letter, 1 small letter, 1 number and 1 special character
+        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(user_info.password)) {
+            throw new Error("Password must be at least 8 characters long and include at least 1 capital letter, 1 small letter, 1 number and 1 special character");
+        }
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(user_info.email)) {
+            throw new Error("Invalid email");
         }
         // check if user already exists
         const existingUser = yield users_model_1.default.findOne({ username: user_info.username });
@@ -47,6 +70,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 email: newUser.email,
                 fname: newUser.fname,
                 lname: newUser.lname,
+                profileUrl: newUser.profileUrl,
             },
         });
         return;
@@ -88,11 +112,64 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             data: {
                 _id: user._id,
                 username: user.username,
+                profileUrl: user.profileUrl,
                 accessToken: accessToken,
                 refreshToken: refreshToken,
             },
         });
         return;
+    }
+    catch (error) {
+        res.status(400).send({ status: "Error", message: error.message });
+        return;
+    }
+});
+const googleLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const client = new google_auth_library_1.OAuth2Client();
+        const ticket = yield client.verifyIdToken({
+            idToken: req.body.credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        if (!payload) {
+            throw new Error("Invalid token");
+        }
+        const email = payload.email;
+        if (email) {
+            let user = yield users_model_1.default.findOne({ email: email });
+            if (!user) {
+                user = yield users_model_1.default.create({
+                    username: email.split("@")[0],
+                    password: email + process.env.TOKEN_SECRET,
+                    email: email,
+                    fname: payload.given_name,
+                    lname: payload.family_name,
+                    profileUrl: payload.picture,
+                });
+            }
+            // Create an access token
+            const rand1 = Math.floor(Math.random() * 1000000);
+            const accessToken = jsonwebtoken_1.default.sign({ _id: user._id, random: rand1 }, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_EXPIRATION });
+            // Create a refresh token
+            const rand2 = Math.floor(Math.random() * 1000000);
+            const refreshToken = jsonwebtoken_1.default.sign({ _id: user._id, random: rand2 }, process.env.TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION });
+            // save refresh token to db
+            if (!user.refreshTokens)
+                user.refreshTokens = [];
+            user.refreshTokens.push(refreshToken);
+            yield user.save();
+            res.status(200).send({
+                status: "Success",
+                data: {
+                    _id: user._id,
+                    username: user.username,
+                    profileUrl: user.profileUrl,
+                    accessToken: accessToken,
+                    refreshToken: refreshToken,
+                },
+            });
+        }
     }
     catch (error) {
         res.status(400).send({ status: "Error", message: error.message });
@@ -232,6 +309,7 @@ const authTestMiddleware = (req, res, next) => {
 const auth_controller = {
     register,
     login,
+    googleLogin,
     logout,
     refresh,
     authTestMiddleware,

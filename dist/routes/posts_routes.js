@@ -32,6 +32,16 @@ const router = express_1.default.Router();
  *         sender:
  *           type: string
  *           example: 64d2f34c9b3d5e001ee0fede
+ *         likes:
+ *           type: array
+ *           items:
+ *            type: string
+ *            example: ["64d2f34c9b3d5e001ee0fede", "64d2f34c9b3d5e001ee0fedc"]
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           example: 2025-02-02T12:00:00.000Z
+ *
  *     PostInput:
  *       type: object
  *       required:
@@ -155,7 +165,7 @@ router.post("/", auth_controller_1.default.authTestMiddleware, (req, res) => {
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Post'
+ *                    $ref: '#/components/schemas/Post'
  *       400:
  *         description: Error retrieving posts
  *         content:
@@ -406,6 +416,78 @@ router.put("/:id", auth_controller_1.default.authTestMiddleware, (req, res) => {
  */
 router.delete("/:id", auth_controller_1.default.authTestMiddleware, (req, res) => {
     posts_controller_1.default.deleteItem(req, res);
+});
+/**
+ * @swagger
+ * /posts/like/{id}:
+ *   put:
+ *     summary: Like or unlike a post
+ *     description: Toggles a like for the authenticated user on a specific post.
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The post ID
+ *     responses:
+ *       200:
+ *         description: Successfully toggled like on the post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Success
+ *                 data:
+ *                  $ref: '#/components/schemas/Post'
+ *       404:
+ *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: Post not found
+ *       400:
+ *         description: Error toggling like
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: An error occurred
+ *       401:
+ *         description: No token provided
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: Access denied
+ */
+router.put("/like/:id", auth_controller_1.default.authTestMiddleware, (req, res) => {
+    posts_controller_1.default.toggleLike(req, res);
 });
 exports.default = router;
 //# sourceMappingURL=posts_routes.js.map
