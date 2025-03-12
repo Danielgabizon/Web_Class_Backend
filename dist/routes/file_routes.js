@@ -16,7 +16,11 @@ const storage = multer_1.default.diskStorage({
     },
 });
 const upload = (0, multer_1.default)({ storage: storage });
+<<<<<<< HEAD
 const base = "http://localhost:3000";
+=======
+const base = process.env.DOMAIN_BASE;
+>>>>>>> 392b39f9e2141dd270381da0872ed0e9b5d3b1d4
 router.post("/", upload.single("file"), (req, res) => {
     var _a;
     res.status(200).send({ url: base + "/" + ((_a = req.file) === null || _a === void 0 ? void 0 : _a.path) });
