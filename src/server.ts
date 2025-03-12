@@ -13,7 +13,7 @@ import auth_routes from "./routes/auth_routes";
 import comments_routes from "./routes/comments_routes";
 import users_routes from "./routes/users_routes";
 import file_routes from "./routes/file_routes";
-
+//
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
@@ -39,8 +39,10 @@ const options = {
       version: "1.0.0",
       description: "REST server including authentication using JWT",
     },
-    servers: [{ url: `http://localhost:${process.env.PORT}` },{url:`http://10.10.246.62:${process.env.PORT}`},
-      {url:`https://10.10.246.62:${process.env.PORT}`}
+    servers: [
+      { url: `http://localhost:${process.env.PORT}` },
+      { url: `http://10.10.246.62:${process.env.PORT}` },
+      { url: `https://10.10.246.62:${process.env.PORT}` },
     ],
   },
   apis: ["./src/routes/*.ts"],
