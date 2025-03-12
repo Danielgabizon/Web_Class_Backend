@@ -34,12 +34,61 @@ const router = express_1.default.Router();
  *             lname:
  *               type: string
  *               example: Doe
+ *             profileUrl:
+ *               type: string
+ *               example: https://example.com/profile.jpg
+ *
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
  */
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Retrieve all users with optional filtering
+ *     description: Fetches a list of all users. Allows filtering by username using query parameters.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         schema:
+ *           type: string
+ *         description: Filter users by their username (case-insensitive)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: Error
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred"
+ */
+router.get("/", user_controller_1.default.getAllUsers);
 /**
  * @swagger
  * /users/{id}:
@@ -96,7 +145,7 @@ const router = express_1.default.Router();
  *                  type: string
  *                  example: "An error occurred"
  */
-router.get("/:id", user_controller_1.default.getUserDetails);
+router.get("/:id", user_controller_1.default.getUserDetailsById);
 /**
  * @swagger
  * /users/{id}:

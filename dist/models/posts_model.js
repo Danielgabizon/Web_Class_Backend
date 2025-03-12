@@ -52,7 +52,17 @@ const postSchema = new mongoose_1.Schema({
         required: true,
         trim: true,
     },
-});
+    postUrl: {
+        type: String,
+    },
+    likes: [
+        {
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User",
+            default: [],
+        },
+    ],
+}, { timestamps: { createdAt: true, updatedAt: false } });
 // Export the model
 exports.default = mongoose_1.default.model("Post", postSchema);
 //# sourceMappingURL=posts_model.js.map

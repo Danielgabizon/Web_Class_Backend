@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-;
 const Schema = mongoose_1.default.Schema;
 const userSchema = new Schema({
     username: {
@@ -20,7 +19,6 @@ const userSchema = new Schema({
     email: {
         type: String,
         required: true,
-        match: [/^\S+@\S+\.\S+$/, "Invalid email address"],
         trim: true,
         unique: true,
     },
@@ -33,6 +31,9 @@ const userSchema = new Schema({
         type: String,
         required: true,
         trim: true,
+    },
+    profileUrl: {
+        type: String,
     },
     refreshTokens: {
         type: [String],

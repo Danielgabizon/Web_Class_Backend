@@ -28,6 +28,7 @@ const user: user = {
   email: "username1@gmail.com",
   fname: "fname1",
   lname: "lname1",
+  profileUrl: "profileUrl1",
 };
 
 describe("Auth Tests", () => {
