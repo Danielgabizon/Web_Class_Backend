@@ -30,6 +30,7 @@ app.use("/users", users_routes);
 app.use("/public/", express.static("public"));
 app.use("/file", file_routes);
 app.use("/gemini", gemini_routes);
+app.use(express.static("front"));
 
 const options = {
   definition: {
