@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "prod": "cp .env_prod .env && tsc -p tsconfig_prod.json && pm2 restart ecosystem.config.js --env productio",
-    "start": "tsc && node ./dist/app.js",
-    "dev": "nodemon ./src/app.ts",
+    "dev": "cp .env_dev .env && nodemon ./src/app.ts",
+    "devwin": "copy /Y .env_dev .env && nodemon ./src/app.ts",
     "test": "tsc && jest --detectOpenHandles --verbose --forceExit ",
     "testPost": "tsc && jest --detectOpenHandles --forceExit --verbose posts.test.ts",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit ./tests/auth.test.ts",
