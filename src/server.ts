@@ -7,6 +7,7 @@ import swaggerUI from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 import bodyParser from "body-parser";
 import gemini_routes from "./routes/gemini_routes"; // Import the Gemini routes
+import path from "path";
 
 import posts_routes from "./routes/posts_routes";
 import auth_routes from "./routes/auth_routes";
@@ -31,6 +32,10 @@ app.use("/public/", express.static("public"));
 app.use("/file", file_routes);
 app.use("/gemini", gemini_routes);
 app.use(express.static("front"));
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "front", "index.html"));
+});
+
 
 const options = {
   definition: {
