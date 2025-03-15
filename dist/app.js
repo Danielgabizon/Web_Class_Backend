@@ -19,11 +19,6 @@ const port = process.env.PORT;
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const app = yield (0, server_1.default)();
-<<<<<<< HEAD
-        app.listen(port, () => {
-            console.log(`Server running on http://localhost:${port}`);
-        });
-=======
         if (process.env.NODE_ENV != "production")
             app.listen(port, () => {
                 console.log(`Server running on http://localhost:${port}`);
@@ -35,7 +30,6 @@ const port = process.env.PORT;
             };
             https_1.default.createServer(prop, app).listen(port);
         }
->>>>>>> 392b39f9e2141dd270381da0872ed0e9b5d3b1d4
     }
     catch (error) {
         console.error("Failed to initialize app:", error);

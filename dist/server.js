@@ -26,6 +26,7 @@ const auth_routes_1 = __importDefault(require("./routes/auth_routes"));
 const comments_routes_1 = __importDefault(require("./routes/comments_routes"));
 const users_routes_1 = __importDefault(require("./routes/users_routes"));
 const file_routes_1 = __importDefault(require("./routes/file_routes"));
+//
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use((req, res, next) => {
@@ -41,6 +42,7 @@ app.use("/users", users_routes_1.default);
 app.use("/public/", express_1.default.static("public"));
 app.use("/file", file_routes_1.default);
 app.use("/gemini", gemini_routes_1.default);
+app.use(express_1.default.static("front"));
 const options = {
     definition: {
         openapi: "3.0.0",
@@ -49,8 +51,10 @@ const options = {
             version: "1.0.0",
             description: "REST server including authentication using JWT",
         },
-        servers: [{ url: `http://localhost:${process.env.PORT}` }, { url: `http://10.10.246.62:${process.env.PORT}` },
-            { url: `https://10.10.246.62:${process.env.PORT}` }
+        servers: [
+            { url: `http://localhost:${process.env.PORT}` },
+            { url: `http://10.10.246.62:${process.env.PORT}` },
+            { url: `https://10.10.246.62:${process.env.PORT}` },
         ],
     },
     apis: ["./src/routes/*.ts"],
