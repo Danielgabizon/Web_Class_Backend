@@ -31,10 +31,12 @@ app.use("/users", users_routes);
 app.use("/public/", express.static("public"));
 app.use("/file", file_routes);
 app.use("/gemini", gemini_routes);
-app.use(express.static("front"));
 app.get("*", (req, res) => {
+  console.log(req.url)
   res.sendFile(path.resolve(__dirname, "front", "index.html"));
 });
+
+app.use(express.static("front"));
 
 
 const options = {
@@ -49,6 +51,8 @@ const options = {
       { url: `http://localhost:${process.env.PORT}` },
       { url: `http://10.10.246.62:${process.env.PORT}` },
       { url: `https://10.10.246.62:${process.env.PORT}` },
+      { url: `https://node62.cs.colman.ac.il:${process.env.PORT}` },
+
     ],
   },
   apis: ["./src/routes/*.ts"],

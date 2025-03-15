@@ -21,6 +21,7 @@ const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const gemini_routes_1 = __importDefault(require("./routes/gemini_routes")); // Import the Gemini routes
+const path_1 = __importDefault(require("path"));
 const posts_routes_1 = __importDefault(require("./routes/posts_routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth_routes"));
 const comments_routes_1 = __importDefault(require("./routes/comments_routes"));
@@ -43,6 +44,9 @@ app.use("/public/", express_1.default.static("public"));
 app.use("/file", file_routes_1.default);
 app.use("/gemini", gemini_routes_1.default);
 app.use(express_1.default.static("front"));
+app.get("*", (req, res) => {
+    res.sendFile(path_1.default.resolve(__dirname, "front", "index.html"));
+});
 const options = {
     definition: {
         openapi: "3.0.0",
